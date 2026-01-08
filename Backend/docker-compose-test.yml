@@ -1,4 +1,4 @@
-# {{PROJECT_NAME}} 生产环境 Docker Compose 配置
+# {{PROJECT_NAME}} 测试环境 Docker Compose 配置
 #
 # 占位符说明：
 #   {{DOCKER_NAMESPACE}} - 镜像命名空间
@@ -12,8 +12,8 @@
 version: "3"
 services:
   django:
-    image: registry.cn-hangzhou.aliyuncs.com/matrix-studio/{{DOCKER_NAMESPACE}}:prod
-    command: sh django-entrypoint-prod.sh
+    image: registry.cn-hangzhou.aliyuncs.com/matrix-studio/{{DOCKER_NAMESPACE}}:test
+    command: sh django-entrypoint-test.sh
     networks:
       - app-net
     ports:
@@ -22,15 +22,15 @@ services:
       - ./log:/usr/local/var/log
       - ./media:/app/Backend/media
     environment:
-      - MYSQL_NAME=${MYSQL_NAME:-your_prod_db_name}
-      - MYSQL_USER=${MYSQL_USER:-your_prod_db_user}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-your_prod_db_password}
-      - MYSQL_HOST=${MYSQL_HOST:-your_prod_db_host}
+      - MYSQL_NAME=${MYSQL_NAME:-your_test_db_name}
+      - MYSQL_USER=${MYSQL_USER:-your_test_db_user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-your_test_db_password}
+      - MYSQL_HOST=${MYSQL_HOST:-your_test_db_host}
       - MYSQL_PORT=${MYSQL_PORT:-3306}
-      - REDIS_HOST=${REDIS_HOST:-your_prod_redis_host}
+      - REDIS_HOST=${REDIS_HOST:-your_test_redis_host}
       - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_DB=${REDIS_DB:-2}
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-your_prod_redis_password}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-your_test_redis_password}
     restart: always
 
 networks:
