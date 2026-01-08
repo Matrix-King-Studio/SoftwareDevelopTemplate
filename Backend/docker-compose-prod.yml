@@ -1,0 +1,26 @@
+services:
+  django:
+    image: registry.cn-hangzhou.aliyuncs.com/matrix-studio/puff-battle-backend:master
+    command: sh django-entrypoint-prod.sh
+    networks:
+      - puff_battle_net
+    ports:
+      - "10081:8000"
+    volumes:
+      - ./log:/usr/local/var/log
+      - ./media:/app/PuffBattleBackend/media
+    environment:
+      - MYSQL_HOST=172.17.0.14
+      - MYSQL_PORT=3306
+      - MYSQL_NAME=puff-battle-prod
+      - MYSQL_USER=puff-battle-prod
+      - MYSQL_PASSWORD=cxs5AMiD8AbzC73h
+      - REDIS_HOST=172.17.0.14
+      - REDIS_PORT=6379
+      - REDIS_DB=4
+      - REDIS_PASSWORD=XM13CVpo54fK8r
+    restart: always
+
+networks:
+  puff_battle_net:
+    driver: bridge

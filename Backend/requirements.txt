@@ -1,0 +1,14 @@
+# Django 项目模板基础配置
+Django==5.2.10
+djangorestframework==3.16.1
+markdown==3.10
+django-filter==25.2
+dj-rest-auth[with_social]==7.0.1
+django-allauth[socialaccount]==65.13.1
+django-extensions==4.1
+django-cors-headers==4.9.0
+django-simpleui==2025.6.24
+drf-yasg[validation]==1.21.11
+django-import-export==4.3.14
+mysqlclient==2.2.7
+gunicorn==23.0.0
