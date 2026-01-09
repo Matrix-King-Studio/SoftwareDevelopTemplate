@@ -13,6 +13,27 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Set Environment Variables
+        id: env
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/master" ]; then
+            echo "ENV_TYPE=prod" >> $GITHUB_OUTPUT
+            echo "SSH_PRIVATE_KEY=${{ secrets.PROD_SSH_PRIVATE_KEY }}" >> $GITHUB_OUTPUT
+            echo "REMOTE_HOST=${{ secrets.PROD_REMOTE_HOST }}" >> $GITHUB_OUTPUT
+            echo "DEPLOY_TARGET=${{ secrets.PROD_DEPLOY_TARGET }}" >> $GITHUB_OUTPUT
+            echo "COMPOSE_FILE=docker-compose-prod.yml" >> $GITHUB_OUTPUT
+            echo "MAKE_PULL=pull_prod" >> $GITHUB_OUTPUT
+            echo "MAKE_RESTART=restart_prod" >> $GITHUB_OUTPUT
+          else
+            echo "ENV_TYPE=test" >> $GITHUB_OUTPUT
+            echo "SSH_PRIVATE_KEY=${{ secrets.DEV_SSH_PRIVATE_KEY }}" >> $GITHUB_OUTPUT
+            echo "REMOTE_HOST=${{ secrets.DEV_REMOTE_HOST }}" >> $GITHUB_OUTPUT
+            echo "DEPLOY_TARGET=${{ secrets.DEV_DEPLOY_TARGET }}" >> $GITHUB_OUTPUT
+            echo "COMPOSE_FILE=docker-compose-dev.yml" >> $GITHUB_OUTPUT
+            echo "MAKE_PULL=pull_test" >> $GITHUB_OUTPUT
+            echo "MAKE_RESTART=restart_test" >> $GITHUB_OUTPUT
+          fi
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -26,75 +47,58 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
-          context: ./PanelSurveyBackend
-          file: ./PanelSurveyBackend/Dockerfile
+          context: ./Backend
+          file: ./Backend/Dockerfile
           push: true
           # 禁用构建证明（Provenance），有时能解决上传卡死问题，且能减小镜像体积
           provenance: false
           tags: |
-            registry.cn-hangzhou.aliyuncs.com/matrix-studio/panel-survey-backend:${{ github.ref == 'refs/heads/master' && 'master' || 'dev' }}
+            registry.cn-hangzhou.aliyuncs.com/matrix-studio/panel-survey-backend:${{ steps.env.outputs.ENV_TYPE }}
 
       - name: Set up SSH Key
         run: |
           mkdir -p ~/.ssh
-          if [ "${{ github.ref }}" == "refs/heads/master" ]; then
-            echo "${{ secrets.PROD_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          else
-            echo "${{ secrets.DEV_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          fi
+          echo "${{ steps.env.outputs.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           sed -i -e '$a\' ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           chmod 700 ~/.ssh
 
       - name: Add Known Hosts
         run: |
-          if [ "${{ github.ref }}" == "refs/heads/master" ]; then
-            ssh-keyscan -H "${{ secrets.PROD_REMOTE_HOST }}" >> ~/.ssh/known_hosts
-          else
-            ssh-keyscan -H "${{ secrets.DEV_REMOTE_HOST }}" >> ~/.ssh/known_hosts
-          fi
+          ssh-keyscan -H "${{ steps.env.outputs.REMOTE_HOST }}" >> ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
       - name: Prepare Deployment Scripts
         run: |
           cd Backend/
           mkdir -p deploy_scripts
-          if [ "${{ github.ref }}" == "refs/heads/master" ]; then
-            cp docker-compose-prod.yml deploy_scripts/
-          else
-            cp docker-compose-dev.yml deploy_scripts/
-          fi
+          cp ${{ steps.env.outputs.COMPOSE_FILE }} deploy_scripts/
           cp Makefile deploy_scripts/
 
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@v2.1.5
         env:
-          SSH_PRIVATE_KEY: ${{ github.ref == 'refs/heads/master' && secrets.PROD_SSH_PRIVATE_KEY || secrets.DEV_SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ github.ref == 'refs/heads/master' && secrets.PROD_REMOTE_HOST || secrets.DEV_REMOTE_HOST }}
+          SSH_PRIVATE_KEY: ${{ steps.env.outputs.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ steps.env.outputs.REMOTE_HOST }}
           REMOTE_USER: root
-          SOURCE: PanelSurveyBackend/deploy_scripts/*
-          TARGET: ${{ github.ref == 'refs/heads/master' && secrets.PROD_DEPLOY_TARGET || secrets.DEV_DEPLOY_TARGET }}/PanelSurveyBackend
+          SOURCE: Backend/deploy_scripts/*
+          TARGET: ${{ steps.env.outputs.DEPLOY_TARGET }}/Backend
 
       - name: Run Remote SSH Commands
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ github.ref == 'refs/heads/master' && secrets.PROD_REMOTE_HOST || secrets.TEST_REMOTE_HOST }}
+          host: ${{ steps.env.outputs.REMOTE_HOST }}
           username: root
-          key: ${{ github.ref == 'refs/heads/master' && secrets.PROD_SSH_PRIVATE_KEY || secrets.TEST_SSH_PRIVATE_KEY }}
+          key: ${{ steps.env.outputs.SSH_PRIVATE_KEY }}
           debug: true
           script: |
-            cd ${{ github.ref == 'refs/heads/master' && secrets.PROD_DEPLOY_TARGET || secrets.TEST_DEPLOY_TARGET }}/Backend
+            cd ${{ steps.env.outputs.DEPLOY_TARGET }}/Backend
             sudo docker login --username=${{ secrets.ALI_DOCKER_USERNAME }} --password=${{ secrets.ALI_DOCKER_PASSWORD }} registry.cn-hangzhou.aliyuncs.com
-            if [ "${{ github.ref }}" == "refs/heads/master" ]; then
-              make pull_prod
-              make restart_prod
-            else
-              make pull_test
-              make restart_test
-            fi
+            make ${{ steps.env.outputs.MAKE_PULL }}
+            make ${{ steps.env.outputs.MAKE_RESTART }}
             sudo docker image prune -a -f
             sudo docker logout registry.cn-hangzhou.aliyuncs.com
-            
+
       - name: 钉钉通知
         if: always()
         uses: zcong1993/actions-ding@master
