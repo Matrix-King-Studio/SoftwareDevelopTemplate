@@ -1,0 +1,33 @@
+name: CodeReview
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+    # 1. 限制目标分支：只有合并到 master 时才触发
+    branches: 
+      - master
+
+jobs:
+  pr_agent:
+    # 2. 限制来源分支：只有源分支是 test 且发送者不是 Bot 时才运行
+    if: ${{ github.event.sender.type != 'Bot' && github.head_ref == 'test' }}
+    runs-on: ubuntu-latest
+    # runs-on: self-hosted
+    permissions:
+      issues: write
+      pull-requests: write
+      contents: write
+    name: Run pr agent on every pull request, respond to user comments
+    steps:
+      - name: PR Agent action step
+        id: pragent
+        uses: qodo-ai/pr-agent@main
+        env:
+          OPENAI_KEY: ${{ secrets.OPENAI_KEY }}
+          OPENAI_API_BASE: ${{ secrets.OPENAI_API_BASE }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          config.response_language: "zh-CN"
+          github_action_config.auto_review: "true"
+          github_action_config.auto_describe: "true"
+          github_action_config.auto_improve: "true"
+          github_action_config.pr_actions: '["opened", "reopened", "ready_for_review", "review_requested"]'

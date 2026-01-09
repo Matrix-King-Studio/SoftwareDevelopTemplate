@@ -1,0 +1,30 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+      - name: build
+        run: |
+          cd Frontend
+          npm install && npm run build
+      - name: Deploy to Server
+        uses: easingthemes/ssh-deploy@v2.1.5
+        env:
+          SSH_PRIVATE_KEY: ${{ github.ref == 'refs/heads/master' && secrets.PROD_SSH_PRIVATE_KEY || secrets.DEV_SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ github.ref == 'refs/heads/master' && secrets.PROD_REMOTE_HOST || secrets.DEV_REMOTE_HOST }}
+          REMOTE_USER: root
+          SOURCE: Frontend/dist/*
+          TARGET: ${{ github.ref == 'refs/heads/master' && secrets.PROD_DEPLOY_TARGET || secrets.DEV_DEPLOY_TARGET }}

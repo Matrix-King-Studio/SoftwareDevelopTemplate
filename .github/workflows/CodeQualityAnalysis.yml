@@ -1,0 +1,129 @@
+name: Code Quality Analysis
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  analyze-code-quality:
+    runs-on: ubuntu-latest
+    # runs-on: self-hosted
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      
+      - name: Install fuck-u-code
+        run: go install github.com/Done-0/fuck-u-code/cmd/fuck-u-code@latest
+        
+      - name: Run code quality analysis
+        id: analysis
+        run: |
+          echo "🔍 开始分析代码质量..."
+          
+          # 运行分析，排除常见不需要分析的目录
+          fuck-u-code analyze \
+            --markdown \
+            --summary \
+            --top 10 \
+            --exclude "**/node_modules/**" \
+            --exclude "**/vendor/**" \
+            --exclude "**/dist/**" \
+            --exclude "**/build/**" \
+            --exclude "**/.next/**" \
+            --exclude "**/coverage/**" \
+            --exclude "**/*.min.js" \
+            --exclude "**/*.bundle.js" > code-quality-report.md || true
+          
+          # 如果报告文件不存在，创建一个默认报告
+          if [ ! -f code-quality-report.md ]; then
+            echo "# 代码质量分析报告\n\n分析工具未能生成报告。这可能是因为项目中没有找到可分析的源代码文件。" > code-quality-report.md
+          fi
+          
+          # 限制报告大小 (GitHub 评论最大 65536 字符)
+          if [ $(stat -c%s code-quality-report.md 2>/dev/null || stat -f%z code-quality-report.md 2>/dev/null) -gt 60000 ]; then
+            echo "⚠️ 报告文件过大，进行截断以符合 GitHub 评论大小限制"
+            head -c 60000 code-quality-report.md > temp.md && mv temp.md code-quality-report.md
+            echo -e "\n\n[...] 报告已被截断，完整报告请在本地运行 fuck-u-code 查看" >> code-quality-report.md
+          fi
+          
+          echo "✅ 代码质量分析完成"
+      
+      - name: Comment PR with analysis results
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // 读取报告文件
+            const reportPath = path.join(process.cwd(), 'code-quality-report.md');
+            let reportContent = '';
+            
+            try {
+              reportContent = fs.readFileSync(reportPath, 'utf8');
+              console.log('报告文件读取成功');
+            } catch (error) {
+              console.error('读取报告文件失败:', error);
+              reportContent = '# 代码质量分析报告\n\n无法读取分析报告。请检查工作流日志以获取更多信息。';
+            }
+            
+            // 创建评论内容
+            const commentContent = `
+            ## 🚨 代码质量分析报告
+            
+            ${reportContent}
+            
+            > ℹ️ 注: 本报告由 [fuck-u-code](https://github.com/Done-0/fuck-u-code) 自动生成。分数越高表示代码质量越差（0-100分）。
+            `;
+            
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            
+            try {
+              // 获取已存在的评论
+              const { data: comments } = await github.rest.issues.listComments({
+                owner,
+                repo,
+                issue_number
+              });
+              
+              // 查找是否存在由该工作流创建的评论
+              const botComment = comments.find(comment => 
+                comment.user.type === 'Bot' && 
+                comment.body.includes('代码质量分析报告')
+              );
+              
+              if (botComment) {
+                // 更新现有评论
+                await github.rest.issues.updateComment({
+                  owner,
+                  repo,
+                  comment_id: botComment.id,
+                  body: commentContent
+                });
+                console.log('📝 已更新现有评论');
+              } else {
+                // 创建新评论
+                await github.rest.issues.createComment({
+                  issue_number,
+                  owner,
+                  repo,
+                  body: commentContent
+                });
+                console.log('📝 已创建新评论');
+              }
+            } catch (error) {
+              console.error('❌ 评论 PR 时出错:', error);
+              // 如果评论失败，将错误写入文件以便调试
+              fs.writeFileSync('comment-error.log', JSON.stringify(error, null, 2));
+            }
