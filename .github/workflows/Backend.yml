@@ -28,6 +28,19 @@ jobs:
             echo "MAKE_RESTART=restart_test" >> $GITHUB_OUTPUT
           fi
 
+      - name: Set up SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ github.ref == 'refs/heads/master' && secrets.PROD_SSH_PRIVATE_KEY || secrets.TEST_SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          sed -i -e '$a\' ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          chmod 700 ~/.ssh
+
+      - name: Add Known Hosts
+        run: |
+          ssh-keyscan -H "${{ github.ref == 'refs/heads/master' && secrets.PROD_REMOTE_HOST || secrets.TEST_REMOTE_HOST }}" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
@@ -47,7 +60,8 @@ jobs:
           # 禁用构建证明（Provenance），有时能解决上传卡死问题，且能减小镜像体积
           provenance: false
           tags: |
-            registry.cn-hangzhou.aliyuncs.com/matrix-studio/panel-survey-backend:${{ steps.env.outputs.ENV_TYPE }}
+            registry.cn-hangzhou.aliyuncs.com/matrix-studio/scu-nlp-website:${{ steps.env.outputs.ENV_TYPE }}
+
 
       - name: Prepare Deployment Scripts
         run: |
