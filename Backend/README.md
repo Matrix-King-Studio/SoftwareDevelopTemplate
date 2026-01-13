@@ -27,7 +27,9 @@ python manage.py createsuperuser
 
 ## 自动部署
 
-本地开发完成后，代码需要上传到 GitHub 自己的分支，然后创建 PR 合并到 test 分支，此时会触发测试环境的自动部署，模板中的默认配置可能会导致部署失败，因此需要修改一下 `docker-compose.yml` 文件中的占位符。
+本地开发完成后，代码需要上传到 GitHub 自己的分支，然后创建 PR 合并到 test 分支，此时会触发测试环境的自动部署，模板中的默认配置可能会导致部署失败，因此需要修改一下 `docker-compose.yml` 文件和 `.github\workflows\Backend.yml` 中的占位符。
+
+可以全局搜索关键词：{{DOCKER_NAMESPACE}}，然后将其替换为这个项目的英文名称，注意要小写。
 
 ## 注意事项
 

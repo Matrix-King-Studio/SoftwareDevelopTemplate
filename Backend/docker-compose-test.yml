@@ -2,7 +2,6 @@
 #
 # 占位符说明：
 #   {{DOCKER_NAMESPACE}} - 镜像命名空间
-#   {{DOCKER_NETWORK}} - 容器网络
 #
 # 环境变量说明：
 #   使用 ${VAR:-default} 格式，支持通过环境变量覆盖默认值
@@ -15,7 +14,7 @@ services:
     image: registry.cn-hangzhou.aliyuncs.com/matrix-studio/{{DOCKER_NAMESPACE}}:test
     command: sh django-entrypoint-test.sh
     networks:
-      - app-net
+      - {{DOCKER_NAMESPACE}}-net
     ports:
       - "8004:8000"
     volumes:
@@ -34,5 +33,5 @@ services:
     restart: always
 
 networks:
-  {{DOCKER_NETWORK}}:
+  {{DOCKER_NAMESPACE}}-net:
     driver: bridge

@@ -60,7 +60,7 @@ jobs:
           # 禁用构建证明（Provenance），有时能解决上传卡死问题，且能减小镜像体积
           provenance: false
           tags: |
-            registry.cn-hangzhou.aliyuncs.com/matrix-studio/scu-nlp-website:${{ steps.env.outputs.ENV_TYPE }}
+            registry.cn-hangzhou.aliyuncs.com/matrix-studio/{{DOCKER_NAMESPACE}}:${{ steps.env.outputs.ENV_TYPE }}
 
 
       - name: Prepare Deployment Scripts
