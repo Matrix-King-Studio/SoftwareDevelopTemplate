@@ -18,18 +18,12 @@ jobs:
         run: |
           if [ "${{ github.ref }}" == "refs/heads/master" ]; then
             echo "ENV_TYPE=prod" >> $GITHUB_OUTPUT
-            echo "SSH_PRIVATE_KEY=${{ secrets.PROD_SSH_PRIVATE_KEY }}" >> $GITHUB_OUTPUT
-            echo "REMOTE_HOST=${{ secrets.PROD_REMOTE_HOST }}" >> $GITHUB_OUTPUT
-            echo "DEPLOY_TARGET=${{ secrets.PROD_DEPLOY_TARGET }}" >> $GITHUB_OUTPUT
             echo "COMPOSE_FILE=docker-compose-prod.yml" >> $GITHUB_OUTPUT
             echo "MAKE_PULL=pull_prod" >> $GITHUB_OUTPUT
             echo "MAKE_RESTART=restart_prod" >> $GITHUB_OUTPUT
           else
             echo "ENV_TYPE=test" >> $GITHUB_OUTPUT
-            echo "SSH_PRIVATE_KEY=${{ secrets.DEV_SSH_PRIVATE_KEY }}" >> $GITHUB_OUTPUT
-            echo "REMOTE_HOST=${{ secrets.DEV_REMOTE_HOST }}" >> $GITHUB_OUTPUT
-            echo "DEPLOY_TARGET=${{ secrets.DEV_DEPLOY_TARGET }}" >> $GITHUB_OUTPUT
-            echo "COMPOSE_FILE=docker-compose-dev.yml" >> $GITHUB_OUTPUT
+            echo "COMPOSE_FILE=docker-compose-test.yml" >> $GITHUB_OUTPUT
             echo "MAKE_PULL=pull_test" >> $GITHUB_OUTPUT
             echo "MAKE_RESTART=restart_test" >> $GITHUB_OUTPUT
           fi
@@ -55,19 +49,6 @@ jobs:
           tags: |
             registry.cn-hangzhou.aliyuncs.com/matrix-studio/panel-survey-backend:${{ steps.env.outputs.ENV_TYPE }}
 
-      - name: Set up SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ steps.env.outputs.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-          sed -i -e '$a\' ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          chmod 700 ~/.ssh
-
-      - name: Add Known Hosts
-        run: |
-          ssh-keyscan -H "${{ steps.env.outputs.REMOTE_HOST }}" >> ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
-
       - name: Prepare Deployment Scripts
         run: |
           cd Backend/
@@ -78,21 +59,21 @@ jobs:
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@v2.1.5
         env:
-          SSH_PRIVATE_KEY: ${{ steps.env.outputs.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ steps.env.outputs.REMOTE_HOST }}
+          SSH_PRIVATE_KEY: ${{ github.ref == 'refs/heads/master' && secrets.PROD_SSH_PRIVATE_KEY || secrets.TEST_SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ github.ref == 'refs/heads/master' && secrets.PROD_REMOTE_HOST || secrets.TEST_REMOTE_HOST }}
           REMOTE_USER: root
           SOURCE: Backend/deploy_scripts/*
-          TARGET: ${{ steps.env.outputs.DEPLOY_TARGET }}/Backend
+          TARGET: ${{ github.ref == 'refs/heads/master' && secrets.PROD_DEPLOY_TARGET || secrets.TEST_DEPLOY_TARGET }}/Backend
 
       - name: Run Remote SSH Commands
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ steps.env.outputs.REMOTE_HOST }}
+          host: ${{ github.ref == 'refs/heads/master' && secrets.PROD_REMOTE_HOST || secrets.TEST_REMOTE_HOST }}
           username: root
-          key: ${{ steps.env.outputs.SSH_PRIVATE_KEY }}
+          key: ${{ github.ref == 'refs/heads/master' && secrets.PROD_SSH_PRIVATE_KEY || secrets.TEST_SSH_PRIVATE_KEY }}
           debug: true
           script: |
-            cd ${{ steps.env.outputs.DEPLOY_TARGET }}/Backend
+            cd ${{ github.ref == 'refs/heads/master' && secrets.PROD_DEPLOY_TARGET || secrets.TEST_DEPLOY_TARGET }}/Backend
             sudo docker login --username=${{ secrets.ALI_DOCKER_USERNAME }} --password=${{ secrets.ALI_DOCKER_PASSWORD }} registry.cn-hangzhou.aliyuncs.com
             make ${{ steps.env.outputs.MAKE_PULL }}
             make ${{ steps.env.outputs.MAKE_RESTART }}
