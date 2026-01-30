@@ -1,4 +1,4 @@
-import service from "./base";
+import service from "./config";
 
 
 interface LoginData {
