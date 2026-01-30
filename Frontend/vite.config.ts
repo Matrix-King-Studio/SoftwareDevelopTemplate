@@ -11,4 +11,14 @@ export default defineConfig({
       '@': '/src',
     },
   },
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: "http://127.0.0.1:8000/",
+        changeOrigin: true, //需要代理跨域
+        rewrite: (path) => path.replace(/^\/api/, ''), //路径重写，把'/api'替换为''
+      },
+    },
+  },
 })
