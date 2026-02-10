@@ -1,4 +1,4 @@
-# Matrix工作室软件开发项目模板
+# {{ ProjectChineseName }}
 
 ## 分支维护
 
