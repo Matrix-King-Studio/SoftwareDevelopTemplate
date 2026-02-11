@@ -1,4 +1,4 @@
-# {{PROJECT_NAME}} 生产环境 Docker Compose 配置
+# {{ProjectChineseName}} 生产环境 Docker Compose 配置
 #
 # 占位符说明：
 #   {{DOCKER_NAMESPACE}} - 镜像命名空间
