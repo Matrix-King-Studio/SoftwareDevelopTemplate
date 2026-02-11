@@ -1,5 +1,9 @@
 # {{ProjectChineseName}}
 
+## 快速开始
+
+全局搜索关键词：{{ProjectChineseName}}，然后将其替换为这个项目的中文名称。
+
 ## 分支维护
 
 - master 分支：生产环境分支，用于存放最新的稳定版本，自动部署至生产服务器（横向/外包项目对应甲方服务器，纵向/自研项目对应内部服务器），生产环境，不允许个人开发分支合并，只允许 dev 分支合并，必须创建 [PR](https://github.com/Matrix-King-Studio/***/pulls) 提交合并请求，AI Code Review 和开发负责人 Code Review 之后没问题才能合并。
