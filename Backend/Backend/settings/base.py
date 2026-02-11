@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "drf_yasg",
     "import_export",
+    # 自定义应用
 ]
 
 SITE_ID = 1
