@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "import_export",
     # 自定义应用
+    "Account",
 ]
 
 SITE_ID = 1
