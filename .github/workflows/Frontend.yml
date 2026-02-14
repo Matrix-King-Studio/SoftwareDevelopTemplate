@@ -24,7 +24,7 @@ jobs:
         uses: easingthemes/ssh-deploy@v2.1.5
         env:
           SSH_PRIVATE_KEY: ${{ github.ref == 'refs/heads/master' && secrets.PROD_SSH_PRIVATE_KEY || secrets.DEV_SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ github.ref == 'refs/heads/master' && secrets.PROD_REMOTE_HOST || secrets.DEV_REMOTE_HOST }}
+          REMOTE_HOST: ${{ github.ref == 'refs/heads/master' && secrets.PROD_REMOTE_HOST || secrets.TEST_REMOTE_HOST }}
           REMOTE_USER: root
           SOURCE: Frontend/dist/*
-          TARGET: ${{ github.ref == 'refs/heads/master' && secrets.PROD_DEPLOY_TARGET || secrets.DEV_DEPLOY_TARGET }}
+          TARGET: ${{ github.ref == 'refs/heads/master' && secrets.PROD_DEPLOY_TARGET || secrets.TEST_DEPLOY_TARGET }}
