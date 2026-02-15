@@ -19,11 +19,16 @@ jobs:
       - name: build
         run: |
           cd Frontend
-          npm install && npm run build
+          npm install
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            npm run build -- --mode production
+          else
+            npm run build -- --mode test
+          fi
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@v2.1.5
         env:
-          SSH_PRIVATE_KEY: ${{ github.ref == 'refs/heads/master' && secrets.PROD_SSH_PRIVATE_KEY || secrets.DEV_SSH_PRIVATE_KEY }}
+          SSH_PRIVATE_KEY: ${{ github.ref == 'refs/heads/master' && secrets.PROD_SSH_PRIVATE_KEY || secrets.TEST_SSH_PRIVATE_KEY }}
           REMOTE_HOST: ${{ github.ref == 'refs/heads/master' && secrets.PROD_REMOTE_HOST || secrets.TEST_REMOTE_HOST }}
           REMOTE_USER: root
           SOURCE: Frontend/dist/*
