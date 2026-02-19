@@ -4,11 +4,11 @@
 #   {{DOCKER_NAMESPACE}} - 镜像命名空间
 #
 # 环境变量说明：
-#   使用 ${VAR:-default} 格式，支持通过环境变量覆盖默认值
+#   使用 ${VAR:-default} 格式，支持通过环境变量覆盖默认值，可全局搜索替换
 #   MYSQL_* - MySQL 数据库连接配置
 #   REDIS_* - Redis 连接配置
 
-version: "3"
+name: {{DOCKER_NAMESPACE}}
 services:
   django:
     image: registry.cn-hangzhou.aliyuncs.com/matrix-studio/{{DOCKER_NAMESPACE}}:prod
@@ -16,20 +16,20 @@ services:
     networks:
       - {{DOCKER_NAMESPACE}}-net
     ports:
-      - "8004:8000"
+      - "{{test_django_port}}:8000"
     volumes:
       - ./log:/usr/local/var/log
       - ./media:/app/Backend/media
     environment:
-      - MYSQL_NAME=${MYSQL_NAME:-your_prod_db_name}
-      - MYSQL_USER=${MYSQL_USER:-your_prod_db_user}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-your_prod_db_password}
-      - MYSQL_HOST=${MYSQL_HOST:-your_prod_db_host}
-      - MYSQL_PORT=${MYSQL_PORT:-3306}
-      - REDIS_HOST=${REDIS_HOST:-your_prod_redis_host}
-      - REDIS_PORT=${REDIS_PORT:-6379}
-      - REDIS_DB=${REDIS_DB:-2}
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-your_prod_redis_password}
+      - MYSQL_HOST=${MYSQL_HOST:-prod_mysql_host}
+      - MYSQL_PORT=${MYSQL_PORT:-prod_mysql_port}
+      - MYSQL_NAME=${MYSQL_NAME:-prod_mysql_name}
+      - MYSQL_USER=${MYSQL_USER:-prod_mysql_user}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-prod_mysql_password}
+      - REDIS_HOST=${REDIS_HOST:-prod_redis_host}
+      - REDIS_PORT=${REDIS_PORT:-prod_redis_port}
+      - REDIS_DB=${REDIS_DB:-prod_redis_db}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-prod_redis_password}
     restart: always
 
 networks:

@@ -29,7 +29,10 @@ python manage.py createsuperuser
 
 本地开发完成后，代码需要上传到 GitHub 自己的分支，然后创建 PR 合并到 test 分支，此时会触发测试环境的自动部署，模板中的默认配置可能会导致部署失败，因此需要修改一下 `docker-compose.yml` 文件和 `.github\workflows\Backend.yml` 中的占位符。
 
-可以全局搜索关键词：{{DOCKER_NAMESPACE}}，然后将其替换为这个项目的英文名称，注意要小写。
+全局搜索关键词并替换：
+- {{DOCKER_NAMESPACE}}：其替换为这个项目的英文名称，注意要小写；
+- {{test_django_port}} / {{prod_django_port}}：将其替换为测试/生产环境的端口；
+- {{test_mysql_*}} and {{test_redis_*}}：将其替换为测试/生产环境的配置信息。
 
 ## 注意事项
 

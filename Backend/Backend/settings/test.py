@@ -7,11 +7,11 @@ from .base import *
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MYSQL_HOST = os.getenv("MYSQL_HOST", "39.101.136.131")
-MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
-MYSQL_NAME = os.getenv('MYSQL_NAME', "software-template-test")
-MYSQL_USER = os.getenv("MYSQL_USER", "software-template-test")
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "HyyNj*****Xc6ck")
+MYSQL_HOST = os.getenv("MYSQL_HOST", "test_mysql_host")
+MYSQL_PORT = os.getenv("MYSQL_PORT", "test_mysql_port")
+MYSQL_NAME = os.getenv('MYSQL_NAME', "test_mysql_name")
+MYSQL_USER = os.getenv("MYSQL_USER", "test_mysql_user")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "test_mysql_password")
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
@@ -23,7 +23,7 @@ DATABASES = {
     }
 }
 
-REDIS_HOST = os.getenv("REDIS_HOST", "39.101.136.131")
-REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
-REDIS_DB = int(os.getenv("REDIS_DB", "4"))
-REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "Matrix*****Redis")
+REDIS_HOST = os.getenv("REDIS_HOST", "test_redis_host")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "test_redis_port"))
+REDIS_DB = int(os.getenv("REDIS_DB", "test_redis_db"))
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "test_redis_password")
