@@ -27,9 +27,6 @@ sys.path.insert(0, str(BASE_DIR / 'apps'))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = "django-insecure-$-coch(nitp3%ld7#ffdlqbi5gyy=t9jdq&0fs@w*a=qx1gn!n"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
 ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = ["https://localhost:8000"]
