@@ -19,11 +19,13 @@ jobs:
           if [ "${{ github.ref }}" == "refs/heads/master" ]; then
             echo "ENV_TYPE=prod" >> $GITHUB_OUTPUT
             echo "COMPOSE_FILE=docker-compose-prod.yml" >> $GITHUB_OUTPUT
+            echo "ENTRYPOINT_FILE=django-entrypoint-prod.sh" >> $GITHUB_OUTPUT
             echo "MAKE_PULL=pull_prod" >> $GITHUB_OUTPUT
             echo "MAKE_RESTART=restart_prod" >> $GITHUB_OUTPUT
           else
             echo "ENV_TYPE=test" >> $GITHUB_OUTPUT
             echo "COMPOSE_FILE=docker-compose-test.yml" >> $GITHUB_OUTPUT
+            echo "ENTRYPOINT_FILE=django-entrypoint-test.sh" >> $GITHUB_OUTPUT
             echo "MAKE_PULL=pull_test" >> $GITHUB_OUTPUT
             echo "MAKE_RESTART=restart_test" >> $GITHUB_OUTPUT
           fi
@@ -68,6 +70,7 @@ jobs:
           cd Backend/
           mkdir -p deploy_scripts
           cp ${{ steps.env.outputs.COMPOSE_FILE }} deploy_scripts/
+          cp ${{ steps.env.outputs.ENTRYPOINT_FILE }} deploy_scripts/
           cp Makefile deploy_scripts/
 
       - name: Deploy to Server
