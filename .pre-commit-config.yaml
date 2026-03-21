@@ -1,0 +1,23 @@
+repos:
+  # 检查 Python 代码
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-yaml      # 检查 YAML 格式
+      - id: end-of-file-fixer # 修复文件末尾空行
+      - id: check-added-large-files # 防止不小心提交大文件
+
+  # 本地自定义脚本检查（前后端）
+  - repo: local
+    hooks:
+      - id: check-frontend-build
+        name: Frontend Build Check
+        entry: bash -c "cd Frontend && npm run build"
+        language: system
+        pass_filenames: false
+
+      - id: check-django-reqs
+        name: Backend Check
+        entry: bash -c "cd Backend && python manage.py check"
+        language: system
+        pass_filenames: false

@@ -6,13 +6,14 @@ import { RouterLink, RouterView } from 'vue-router';
   <div id="app">
     <header class="app-header">
       <div class="header-container">
-        <div class="header-brand">
-          <span class="brand-logo">Matrix</span>
+        <RouterLink to="/" class="header-brand" aria-label="前往首页">
+          <span class="brand-logo">M</span>
           <span class="brand-text">Frontend</span>
-        </div>
-        <nav class="app-nav">
-          <RouterLink to="/" class="nav-link">首页</RouterLink>
-          <RouterLink to="/signup_login" class="nav-link">登录/注册</RouterLink>
+        </RouterLink>
+
+        <nav class="app-nav" aria-label="主导航">
+          <RouterLink to="/" class="nav-link" exact-active-class="is-active">首页</RouterLink>
+          <RouterLink to="/signup_login" class="nav-link" active-class="is-active">登录/注册</RouterLink>
         </nav>
       </div>
     </header>
@@ -24,63 +25,73 @@ import { RouterLink, RouterView } from 'vue-router';
 </template>
 
 <style scoped>
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .app-header {
-  background-color: var(--color-bg-secondary);
-  border-bottom: 1px solid var(--color-border);
-  padding: var(--spacing-md) 0;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 200;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-sm);
 }
 
 .header-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 var(--spacing-lg);
+  padding: 0.8rem var(--spacing-lg);
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
 }
 
 .header-brand {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
-  font-size: 1.5rem;
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
+  text-decoration: none;
 }
 
 .brand-logo {
   display: inline-flex;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-primary);
-  color: white;
-  border-radius: var(--border-radius-md);
-  font-size: 1.2rem;
+  border-radius: 11px;
+  font-weight: var(--font-weight-bold);
+  color: #fff;
+  background: linear-gradient(140deg, var(--color-primary), #18a9a9);
+  box-shadow: var(--shadow-md);
 }
 
 .brand-text {
+  font-size: 1.06rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.2px;
   color: var(--color-text-primary);
 }
 
 .app-nav {
   display: flex;
-  gap: var(--spacing-lg);
   align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
 }
 
 .nav-link {
-  color: var(--color-text-secondary);
   text-decoration: none;
+  color: var(--color-text-secondary);
   font-weight: var(--font-weight-medium);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  transition: color var(--transition-fast), background-color var(--transition-fast);
+  border-radius: 999px;
+  padding: 0.44rem 0.88rem;
+  transition: all var(--transition-fast);
 }
 
 .nav-link:hover {
@@ -88,29 +99,30 @@ import { RouterLink, RouterView } from 'vue-router';
   background-color: var(--color-primary-light);
 }
 
-.nav-link.router-link-active {
-  color: var(--color-primary);
-  background-color: var(--color-primary-light);
+.nav-link.is-active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary), #0c7bb4);
+  box-shadow: var(--shadow-sm);
 }
 
 .main-content {
   flex: 1;
-  background-color: var(--color-bg-primary);
 }
 
 @media (max-width: 768px) {
   .header-container {
     flex-direction: column;
+    align-items: stretch;
+    padding: 0.75rem var(--spacing-md);
     gap: var(--spacing-md);
   }
 
-  .app-nav {
-    width: 100%;
+  .header-brand {
     justify-content: center;
   }
 
-  .brand-text {
-    display: none;
+  .app-nav {
+    justify-content: center;
   }
 }
 </style>

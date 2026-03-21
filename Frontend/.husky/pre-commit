@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "=== 🚀 开始执行代码提交前检查 ==="
+
+# ⚠️ 极其重要的高能预警：
+# 当你敲下 git commit 时，Git 默认是在项目的【根目录】执行这段脚本的！
+# 所以我们必须先 cd 到前端或后端目录，才能正常执行命令。
+
+echo "➡️ 1. 检查前端是否能正常 Build..."
+cd Frontend
+npm run type-check || { echo "❌ 前端类型检查失败，请修复后再提交！"; exit 1; }
+
+echo "✅ 所有检查通过，允许提交！"

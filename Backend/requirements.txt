@@ -12,3 +12,4 @@ drf-yasg[validation]==1.21.11
 django-import-export==4.3.14
 mysqlclient==2.2.7
 gunicorn==23.0.0
+pre-commit==4.5.1

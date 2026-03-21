@@ -1,1 +1,70 @@
 @import "tailwindcss";
+
+:root {
+  --color-bg-primary: #f4f7fb;
+  --color-bg-secondary: #ffffff;
+  --color-text-primary: #1a2a40;
+  --color-text-secondary: #5f6f82;
+  --color-border: #d6deea;
+  --color-border-dark: #9aa8ba;
+  --color-primary: #0f68d8;
+  --color-primary-hover: #0b55b3;
+  --color-primary-light: rgba(15, 104, 216, 0.12);
+  --color-success: #179c3d;
+  --color-error: #d93025;
+
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2.25rem;
+  --spacing-2xl: 4rem;
+
+  --border-radius-sm: 0.375rem;
+  --border-radius-md: 0.625rem;
+  --border-radius-lg: 1rem;
+
+  --shadow-sm: 0 2px 6px rgba(15, 43, 77, 0.08);
+  --shadow-md: 0 8px 20px rgba(15, 43, 77, 0.12);
+  --shadow-lg: 0 14px 34px rgba(15, 43, 77, 0.16);
+  --shadow-xl: 0 20px 46px rgba(15, 43, 77, 0.2);
+
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--color-text-primary);
+  background:
+    radial-gradient(circle at 8% -10%, rgba(15, 104, 216, 0.08), transparent 45%),
+    radial-gradient(circle at 92% 3%, rgba(23, 156, 61, 0.06), transparent 32%),
+    var(--color-bg-primary);
+  font-family:
+    "PingFang SC",
+    "Microsoft YaHei",
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    sans-serif;
+  line-height: 1.55;
+}
+
+a {
+  color: inherit;
+}

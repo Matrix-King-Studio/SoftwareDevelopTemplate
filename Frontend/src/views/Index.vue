@@ -1,155 +1,137 @@
 <template>
   <div class="home-page">
-    <!-- Hero Section -->
     <section class="hero-section">
       <div class="container hero-content">
-        <h1 class="hero-title">欢迎来到 Matrix</h1>
-        <p class="hero-subtitle">构建未来的现代化应用平台</p>
-        <p class="hero-description">
-          简洁、高效、专业的解决方案，助力您实现业务目标
+        <p class="hero-eyebrow">Frontend</p>
+        <h1 class="hero-title">把产品想法更快交付到用户手里</h1>
+        <p class="hero-subtitle">
+          统一工程模板、账号体系和页面规范，减少重复搭建时间。
         </p>
         <div class="hero-actions">
           <router-link to="/signup_login" class="btn btn-primary">立即开始</router-link>
-          <a href="#features" class="btn btn-secondary">了解更多</a>
+          <a href="#features" class="btn btn-secondary">查看能力</a>
         </div>
       </div>
     </section>
 
-    <!-- User Profile Section -->
     <section class="user-section">
       <div class="container">
         <UserProfile />
       </div>
     </section>
 
-    <!-- Features Section -->
-    <section class="features-section" id="features">
+    <section id="features" class="features-section">
       <div class="container">
         <div class="section-header">
-          <h2>核心功能</h2>
-          <p class="section-subtitle">我们为您提供完整的解决方案</p>
+          <h2>你可以直接复用的模块</h2>
+          <p>从认证、状态管理到页面结构，开箱即可继续业务开发。</p>
         </div>
 
         <div class="features-grid">
-          <div class="feature-card">
-            <div class="feature-icon">🚀</div>
-            <h3>快速部署</h3>
-            <p>一键部署，快速启动您的项目，让创意快速落地</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">🔒</div>
-            <h3>安全可靠</h3>
-            <p>企业级安全认证，确保您的数据安全和隐私保护</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">📊</div>
-            <h3>数据分析</h3>
-            <p>实时数据分析和展示，帮助您做出更好的决策</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">⚡</div>
-            <h3>高性能</h3>
-            <p>优化的架构设计，提供稳定和高效的服务体验</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">🌐</div>
-            <h3>全球覆盖</h3>
-            <p>多地部署支持，确保用户获得最佳的访问速度</p>
-          </div>
-
-          <div class="feature-card">
-            <div class="feature-icon">💡</div>
-            <h3>技术支持</h3>
-            <p>24/7 专业技术支持团队，随时准备帮助您解决问题</p>
-          </div>
+          <article class="feature-card">
+            <span class="feature-tag">01</span>
+            <h3>基础认证流程</h3>
+            <p>内置登录注册逻辑，API 对接方式清晰，方便扩展权限能力。</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-tag">02</span>
+            <h3>模块化页面结构</h3>
+            <p>首页、账号页与通用组件已拆分，后续新增页面更容易维护。</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-tag">03</span>
+            <h3>统一视觉变量</h3>
+            <p>颜色、阴影、边距通过全局变量管理，样式一致性更高。</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-tag">04</span>
+            <h3>响应式适配</h3>
+            <p>移动端与桌面端布局分别优化，避免关键按钮挤压和错位。</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-tag">05</span>
+            <h3>可扩展状态管理</h3>
+            <p>Pinia store 结构明确，适合继续接入更多业务域的数据流。</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-tag">06</span>
+            <h3>快速部署友好</h3>
+            <p>Vite 构建链路轻量，适合本地调试与持续集成环境。</p>
+          </article>
         </div>
       </div>
     </section>
 
-    <!-- CTA Section -->
     <section class="cta-section">
       <div class="container cta-content">
-        <h2>准备好开始了吗？</h2>
-        <p>加入数千名用户，体验我们的平台</p>
+        <h2>准备好开始你的下一个前端项目了吗？</h2>
+        <p>注册一个账户，直接在现有模板上继续开发。</p>
         <router-link to="/signup_login" class="btn btn-primary btn-large">注册免费账户</router-link>
       </div>
     </section>
 
-    <!-- Footer -->
     <footer class="home-footer">
       <div class="container">
-        <p>&copy; 2026 Matrix Frontend. 保留所有权利。</p>
+        <p>&copy; 2026 Frontend. All rights reserved.</p>
       </div>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
 import UserProfile from '@/components/account/UserProfile.vue';
-
-const router = useRouter();
 </script>
 
 <style scoped>
 .home-page {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  min-height: 100%;
 }
 
 .container {
-  max-width: 1280px;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 var(--spacing-lg);
-  width: 100%;
 }
 
-/* Hero Section */
 .hero-section {
-  background: linear-gradient(135deg, var(--color-bg-secondary) 0%, var(--color-bg-primary) 100%);
-  padding: var(--spacing-2xl) 0;
+  padding: 4.6rem 0 3.4rem;
   border-bottom: 1px solid var(--color-border);
+  background:
+    linear-gradient(130deg, #f9fbff 0%, #eef4ff 55%, #eaf6f2 100%);
 }
 
 .hero-content {
   text-align: center;
-  padding: var(--spacing-xl) var(--spacing-lg);
+}
+
+.hero-eyebrow {
+  display: inline-block;
+  margin: 0 0 var(--spacing-md);
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 104, 216, 0.2);
+  color: #0b5fc8;
+  background: rgba(15, 104, 216, 0.06);
+  font-size: 0.9rem;
 }
 
 .hero-title {
-  font-size: 3.5rem;
-  font-weight: var(--font-weight-bold);
-  line-height: 1.1;
-  margin: 0 0 var(--spacing-md) 0;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  margin: 0;
+  font-size: clamp(2rem, 4.6vw, 3.6rem);
+  line-height: 1.12;
+  color: #0d2748;
 }
 
 .hero-subtitle {
-  font-size: 1.5rem;
-  color: var(--color-text-primary);
-  font-weight: var(--font-weight-medium);
-  margin: 0 0 var(--spacing-md) 0;
-}
-
-.hero-description {
-  font-size: 1.1rem;
+  max-width: 680px;
+  margin: var(--spacing-md) auto 0;
+  font-size: 1.08rem;
   color: var(--color-text-secondary);
-  margin: 0 0 var(--spacing-xl) 0;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.7;
 }
 
 .hero-actions {
+  margin-top: var(--spacing-xl);
   display: flex;
   gap: var(--spacing-md);
   justify-content: center;
@@ -157,208 +139,171 @@ const router = useRouter();
 }
 
 .btn {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--border-radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 132px;
+  border-radius: 12px;
+  padding: 0.66rem 1.2rem;
   text-decoration: none;
   font-weight: var(--font-weight-medium);
   transition: all var(--transition-fast);
-  display: inline-block;
-  cursor: pointer;
-  border: none;
-  font-family: inherit;
-  font-size: 1rem;
 }
 
 .btn-primary {
-  background-color: var(--color-primary);
-  color: white;
+  color: #fff;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--color-primary), #0b83b8);
   box-shadow: var(--shadow-md);
 }
 
 .btn-primary:hover {
-  background-color: var(--color-primary-hover);
-  box-shadow: var(--shadow-lg);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
 .btn-secondary {
-  background-color: transparent;
-  color: var(--color-primary);
-  border: 2px solid var(--color-primary);
+  color: #0b5fc8;
+  border: 1px solid rgba(15, 104, 216, 0.35);
+  background-color: rgba(255, 255, 255, 0.8);
 }
 
 .btn-secondary:hover {
-  background-color: var(--color-primary-light);
-  border-color: var(--color-primary-hover);
+  border-color: var(--color-primary);
+  background-color: rgba(15, 104, 216, 0.08);
 }
 
 .btn-large {
-  padding: var(--spacing-md) var(--spacing-xl);
-  font-size: 1.1rem;
+  padding: 0.82rem 1.35rem;
 }
 
-/* User Section */
 .user-section {
-  padding: var(--spacing-xl) 0;
-  background-color: var(--color-bg-primary);
+  padding: 2.5rem 0 1.25rem;
 }
 
-/* Features Section */
 .features-section {
-  padding: var(--spacing-2xl) 0;
-  background-color: var(--color-bg-primary);
+  padding: 2.2rem 0 4rem;
 }
 
 .section-header {
   text-align: center;
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: 1.6rem;
 }
 
 .section-header h2 {
-  font-size: 2.5rem;
-  margin: 0 0 var(--spacing-md) 0;
-  color: var(--color-text-primary);
+  margin: 0;
+  font-size: clamp(1.6rem, 3.1vw, 2.3rem);
+  color: #102c4f;
 }
 
-.section-subtitle {
-  font-size: 1.1rem;
+.section-header p {
+  margin: 0.65rem 0 0;
   color: var(--color-text-secondary);
-  margin: 0;
 }
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--spacing-md);
 }
 
 .feature-card {
-  background-color: var(--color-bg-secondary);
+  position: relative;
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius-lg);
-  padding: var(--spacing-lg);
-  text-align: center;
-  transition: all var(--transition-normal);
-  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 1.2rem;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
 }
 
 .feature-card:hover {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-lg);
   transform: translateY(-4px);
+  border-color: rgba(15, 104, 216, 0.35);
+  box-shadow: var(--shadow-md);
 }
 
-.feature-icon {
-  font-size: 3rem;
-  margin-bottom: var(--spacing-md);
-  display: block;
+.feature-tag {
+  display: inline-block;
+  margin-bottom: 0.7rem;
+  font-size: 0.78rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+  color: #0c67cc;
+  background-color: rgba(15, 104, 216, 0.11);
+  border-radius: 999px;
+  padding: 0.18rem 0.56rem;
 }
 
 .feature-card h3 {
-  font-size: 1.3rem;
-  margin: 0 0 var(--spacing-sm) 0;
+  margin: 0;
+  font-size: 1.05rem;
   color: var(--color-text-primary);
 }
 
 .feature-card p {
+  margin: 0.6rem 0 0;
   color: var(--color-text-secondary);
-  margin: 0;
-  line-height: 1.6;
+  font-size: 0.96rem;
 }
 
-/* CTA Section */
 .cta-section {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
-  padding: var(--spacing-2xl) 0;
-  color: white;
-  text-align: center;
+  color: #fff;
+  background: linear-gradient(125deg, #0f68d8 0%, #0e8bb7 100%);
 }
 
 .cta-content {
-  padding: var(--spacing-xl) var(--spacing-lg);
+  text-align: center;
+  padding: 3.2rem var(--spacing-lg);
 }
 
-.cta-section h2 {
-  font-size: 2.5rem;
-  margin: 0 0 var(--spacing-md) 0;
-  color: white;
+.cta-content h2 {
+  margin: 0;
+  font-size: clamp(1.55rem, 3.2vw, 2.3rem);
 }
 
-.cta-section p {
-  font-size: 1.1rem;
+.cta-content p {
+  margin: 0.8rem 0 1.4rem;
   color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 var(--spacing-xl) 0;
 }
 
-.cta-section .btn-primary {
-  background-color: white;
-  color: var(--color-primary);
+.cta-content .btn-primary {
+  background: #fff;
+  color: #0f68d8;
 }
 
-.cta-section .btn-primary:hover {
-  background-color: rgba(255, 255, 255, 0.9);
-  box-shadow: var(--shadow-xl);
-}
-
-/* Footer */
 .home-footer {
-  background-color: var(--color-bg-secondary);
   border-top: 1px solid var(--color-border);
-  padding: var(--spacing-lg) 0;
-  margin-top: auto;
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .home-footer p {
-  text-align: center;
   margin: 0;
+  text-align: center;
   color: var(--color-text-secondary);
-  font-size: 0.95rem;
+  padding: var(--spacing-lg) 0;
+  font-size: 0.92rem;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
-  .hero-title {
-    font-size: 2.5rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1.2rem;
+  .container {
+    padding: 0 var(--spacing-md);
   }
 
   .hero-section {
-    padding: var(--spacing-xl) 0;
-  }
-
-  .hero-content {
-    padding: var(--spacing-lg) var(--spacing-md);
+    padding: 3.4rem 0 2.4rem;
   }
 
   .hero-actions {
     flex-direction: column;
-    gap: var(--spacing-md);
   }
 
   .btn {
     width: 100%;
-    text-align: center;
   }
 
-  .section-header h2 {
-    font-size: 2rem;
-  }
-
-  .features-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-  }
-
-  .cta-section h2 {
-    font-size: 2rem;
-  }
-
-  .container {
-    padding: 0 var(--spacing-md);
+  .cta-content {
+    padding: 2.6rem var(--spacing-md);
   }
 }
 </style>

@@ -67,14 +67,12 @@
 <script setup lang="ts">
 import { reactive, ref, computed } from 'vue';
 import { useAccountStore } from '@/stores/account';
-import { useRouter } from 'vue-router';
 
 const emit = defineEmits<{
   'register-success': []
 }>();
 
 const accountStore = useAccountStore();
-const router = useRouter();
 
 const formData = reactive({
   username: '',
