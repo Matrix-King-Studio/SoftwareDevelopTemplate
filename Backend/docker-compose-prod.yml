@@ -12,6 +12,7 @@ name: {{DOCKER_NAMESPACE}}
 services:
   django:
     image: registry.cn-hangzhou.aliyuncs.com/matrix-studio/{{DOCKER_NAMESPACE}}:prod
+    container_name: {{DOCKER_NAMESPACE}}-django
     command: sh django-entrypoint-prod.sh
     networks:
       - {{DOCKER_NAMESPACE}}-net
