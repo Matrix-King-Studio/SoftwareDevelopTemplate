@@ -1,4 +1,3 @@
-python manage.py makemigrations --settings=Backend.settings.prod
 python manage.py migrate --settings=Backend.settings.prod
 
 # 在收集静态文件之前先删除静态文件夹，否则会询问是否覆盖导致报错
