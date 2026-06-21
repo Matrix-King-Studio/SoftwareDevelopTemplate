@@ -2,3 +2,7 @@
 .vscode
 .DS_Store
 .venv/
+.claude
+.codex
+.omc
+.omx
