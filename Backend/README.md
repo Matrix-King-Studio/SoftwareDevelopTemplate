@@ -34,6 +34,97 @@ python manage.py createsuperuser
 - {{test_django_port}} / {{prod_django_port}}：将其替换为测试/生产环境的端口；
 - {{test_mysql_*}} and {{test_redis_*}}：将其替换为测试/生产环境的配置信息。
 
+## API 架构与规范
+
+本模板内置一套企业级通用 API 基础设施,核心代码位于 `Backend/utils/`。
+
+### 统一响应格式
+
+所有接口(成功与失败)均返回固定结构:
+
+```json
+{ "code": 200, "message": "success", "data": {}, "requestId": "uuid" }
+```
+
+- `code`：业务/HTTP 状态码,2xx 表示成功;
+- `message`：提示信息;
+- `data`：业务数据,无数据时为 `{}`;
+- `requestId`：本次请求唯一 ID,同时写入响应头 `X-Request-Id`,
+  优先复用前端注入的 `X-Trace-Id`,用于前后端日志链路关联。
+
+### 目录结构
+
+```
+Backend/
+├── utils/
+│   ├── drf/
+│   │   ├── api.py                StandardAPIView 视图基类 + success/error_response
+│   │   ├── pagination.py         StandardPageNumberPagination(count/page/page_size/results)
+│   │   └── exception_handler.py  全局异常处理(校验错误→可读 message、DB/Redis→507、403→401、兜底 500)
+│   ├── auth/
+│   │   ├── token_service.py      JWT 签发/解析/轮换/失效(基于 token_version)
+│   │   ├── authentication.py     BearerTokenAuthentication(Bearer JWT 认证后端)
+│   │   └── permissions.py        IsActiveUser / IsAdminRole 等通用权限
+│   └── log/
+│       ├── request_id.py         requestId 线程本地存取
+│       └── middleware.py         RequestLogMiddleware(生成/注入 requestId + 请求日志脱敏)
+└── apps/Account/
+    ├── models.py                 自定义 User(AbstractUser + role/status/token_version)
+    ├── serializers/auth.py       Login/Register/RefreshToken/UserInfo 序列化器
+    ├── views/auth.py             登录/注册/当前用户/登出/刷新视图
+    └── urls.py                   auth/ 路由
+```
+
+### 认证方案(JWT Bearer + 刷新令牌)
+
+- **access_token**：短效令牌(默认 30 分钟),请求头 `Authorization: Bearer <token>`;
+- **refresh_token**：长效令牌(默认 7 天),用于续签 access;
+- **token_version**：用户表字段,登出/改密时递增,使该用户历史令牌**全部失效**;
+- JWT 有效期等参数在 `settings/base.py` 的 JWT 段配置,支持环境变量覆盖。
+
+认证接口(与前端 `Frontend/src/api/modules/account.ts` 对齐):
+
+| 接口 | 方法 | 说明 | 认证 |
+| --- | --- | --- | --- |
+| `/auth/registration/` | POST | 注册(username/email/password1/password2) | 公开 |
+| `/auth/login/` | POST | 登录(username/password) | 公开,限流 10/min |
+| `/auth/user/` | GET | 获取当前用户 | 需 access |
+| `/auth/logout/` | POST | 登出(递增 token_version) | 需 access |
+| `/auth/token/refresh/` | POST | 刷新(body: refresh_token) | 公开 |
+
+> 前端经 Vite 代理(`/api` → 后端,rewrite 去掉 `/api`),故前端 `/api/auth/login/`
+> 实际命中后端 `/auth/login/`。
+
+### 编写新业务接口
+
+视图继承 `StandardAPIView`,用 `self.success()` / `self.error()` / `self.paginate()`:
+
+```python
+from rest_framework.permissions import IsAuthenticated
+from Backend.utils.drf.api import StandardAPIView
+
+class ArticleListView(StandardAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        qs = Article.objects.all()
+        return self.paginate(request, qs, ArticleSerializer)
+```
+
+### Redis 与缓存
+
+- `dev` 环境使用进程内存缓存(LocMemCache),**不依赖 Redis,开箱即跑**;
+- `test` / `prod` 使用 `django-redis` 接入 Redis,连接信息从环境变量读取
+  (`REDIS_HOST` / `REDIS_PORT` / `REDIS_DB` / `REDIS_PASSWORD`)。
+
+### 依赖
+
+新增:`PyJWT`、`redis`、`django-redis`。
+已移除旧的 Token 认证方案(`dj-rest-auth` / `allauth` / `rest_framework.authtoken`),
+改为纯自定义 JWT。
+
 ## 注意事项
 
 1. 本地开发数据库迁移的时候，一定要在本地执行完 `python manage.py makemigrations` 和 `python manage.py migrate` 之后，将生成的 migrations 文件进行 `git add`，然后再提交代码。这是因为 Github Actions 自动部署服务器的时候也会执行这两条命令，如果本地没有 migrations 文件而服务器上生成了的话，后续可能会导致代码仓库中的 migrations 文件跟服务器上的 migrations 文件不一致；
+
+2. 本模板使用自定义用户模型 `AUTH_USER_MODEL = "Account.User"`,该设置必须在项目**首次 migrate 之前**确定。模板已在零迁移状态下落地,初始迁移文件 `Account/migrations/0001_initial.py` 已生成,直接使用即可;后续若需调整 User 字段,按常规迁移流程执行。

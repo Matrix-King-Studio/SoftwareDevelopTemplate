@@ -1,15 +1,16 @@
 import os
 
-from .base import *
+from .base import *  # noqa: F403
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-MYSQL_HOST = os.getenv("MYSQL_HOST", "prod_mysql_host")
-MYSQL_PORT = os.getenv("MYSQL_PORT", "prod_mysql_port")
-MYSQL_NAME = os.getenv('MYSQL_NAME', "prod_mysql_name")
-MYSQL_USER = os.getenv("MYSQL_USER", "prod_mysql_user")
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "prod_mysql_password")
+# ── MySQL ──
+MYSQL_HOST = os.getenv("MYSQL_HOST", "127.0.0.1")
+MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
+MYSQL_NAME = os.getenv("MYSQL_NAME", "prod_db")
+MYSQL_USER = os.getenv("MYSQL_USER", "prod_user")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "prod_password")
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
@@ -17,11 +18,27 @@ DATABASES = {
         "HOST": MYSQL_HOST,
         "PORT": MYSQL_PORT,
         "PASSWORD": MYSQL_PASSWORD,
-        "USER": MYSQL_USER
+        "USER": MYSQL_USER,
     }
 }
 
-REDIS_HOST = os.getenv("REDIS_HOST", "prod_redis_host")
-REDIS_PORT = int(os.getenv("REDIS_PORT", "prod_redis_port"))
-REDIS_DB = int(os.getenv("REDIS_DB", "prod_redis_db"))
-REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "prod_redis_password")
+# ── Redis ──
+# 注意:端口/库号必须是合法整数,默认值给数字字符串避免 int() 转换崩溃
+REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+REDIS_DB = int(os.getenv("REDIS_DB", "0"))
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "")
+
+_redis_auth = f":{REDIS_PASSWORD}@" if REDIS_PASSWORD else ""
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://{_redis_auth}{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}",
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+    }
+}
+
+# 生产安全建议(按需启用)
+# SECURE_SSL_REDIRECT = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
