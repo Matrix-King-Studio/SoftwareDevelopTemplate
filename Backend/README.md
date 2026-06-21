@@ -5,6 +5,7 @@
 跟标准的 Django 项目的区别还有：
 1. settings 配置文件转移到了 Backend/Backend/settings 文件夹内，base.py 中是基础配置，dev.py 代表的是开发环境配置，test.py 代表的是测试环境配置，prod.py 代表的是生产环境配置；
 2. startapp 创建的应用转移到了 Backend/Backend/apps 文件夹内，每一个文件夹代表了一个应用，如果要新建应用的话，需要先 `cd Backend/apps`然后在再`python ../../manage.py startapp ApplicationName`（注意应用首字母要大写）；
+3. WSGI 入口按环境命名：`wsgi_dev.py` 是本地开发环境，`wsgi_test.py` 是测试环境，`wsgi_prod.py` 是生产环境；Gunicorn 自身配置放在 `gunicorn_config.py`。
 
 ## 快速开始
 

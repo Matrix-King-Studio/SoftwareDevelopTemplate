@@ -10,4 +10,4 @@ python manage.py collectstatic
 # nohup celery -A Backend worker -l INFO --concurrency=1 > /usr/local/var/log/celery_worker.log 2>&1 &
 # nohup celery -A Backend beat   -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler > /usr/local/var/log/celery_beat.log 2>&1 &
 
-gunicorn --bind=0.0.0.0:8000 --capture-output --workers=1 --threads=1 --timeout 60 -c gunicorn_conf.py Backend.wsgi_test:application
+gunicorn --bind=0.0.0.0:8000 --capture-output --workers=1 --threads=1 --timeout 60 -c gunicorn_config.py Backend.wsgi_test:application

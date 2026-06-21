@@ -78,7 +78,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "Backend.wsgi.application"
+WSGI_APPLICATION = "Backend.wsgi_dev.application"
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
