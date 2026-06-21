@@ -1,0 +1,120 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+. "$ROOT_DIR/scripts/git-hooks/common.sh"
+
+cd "$ROOT_DIR"
+
+# 开关:总开关 HOOKS_ENABLED 或分项 HOOKS_PRE_COMMIT 为否时放行(配置见 .git-hooks.config)。
+if ! is_hook_enabled HOOKS_PRE_COMMIT; then
+  print_skip "pre-commit 已被开关禁用(HOOKS_ENABLED / HOOKS_PRE_COMMIT),跳过检查"
+  exit 0
+fi
+
+echo "=== Pre-commit 代码质量检查 ==="
+
+# ── 防止「部分暂存」被自动修复污染 ──
+# 若某文件既有暂存内容又有未暂存改动,自动 fix/format 后再 git add 会把未暂存部分一起带入提交。
+# 这类文件直接中止,提示开发者先处理干净,避免提交进意料之外的改动。
+list_partially_staged_files() {
+  staged_files="$1"
+  scope_path="$2"
+
+  [ -n "$staged_files" ] || return 0
+
+  unstaged_files="$(git diff --name-only -- "$scope_path" || true)"
+  [ -n "$unstaged_files" ] || return 0
+
+  printf '%s\n' "$staged_files" | while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    if printf '%s\n' "$unstaged_files" | grep -Fxq "$file"; then
+      printf '%s\n' "$file"
+    fi
+  done
+}
+
+abort_if_partially_staged() {
+  module_name="$1"
+  scope_path="$2"
+  staged_files="$3"
+  partial_files="$(list_partially_staged_files "$staged_files" "$scope_path")"
+
+  if [ -n "$partial_files" ]; then
+    print_error "$module_name 存在部分暂存文件,自动修复会把未暂存内容一起带入提交,已中止。"
+    printf '%s\n' "$partial_files" | sed 's/^/  - /'
+    echo "  请先把这些文件处理为全量暂存,或临时收起未暂存修改后再提交。"
+    exit 1
+  fi
+}
+
+# ─── Frontend ───────────────────────────────────────────
+FRONTEND_STAGED=$(git diff --cached --name-only --diff-filter=ACM -- 'Frontend/' || true)
+
+if [ -n "$FRONTEND_STAGED" ]; then
+  abort_if_partially_staged "Frontend" "Frontend/" "$FRONTEND_STAGED"
+  print_section "Frontend: 自动修复与增量校验..."
+  ensure_command npm
+  ensure_command npx
+
+  FRONTEND_LINT_FILES=$(printf '%s\n' "$FRONTEND_STAGED" | grep -E '\.(ts|js|vue)$' || true)
+  FRONTEND_FORMAT_FILES=$(printf '%s\n' "$FRONTEND_STAGED" | grep -E '\.(ts|js|vue|json|css|scss|md)$' || true)
+
+  # ESLint 自动修复(仅对暂存的 ts/js/vue)
+  if [ -n "$FRONTEND_LINT_FILES" ]; then
+    (
+      cd Frontend || exit 1
+      printf '%s\n' "$FRONTEND_LINT_FILES" | sed 's#^Frontend/##' | tr '\n' '\0' | xargs -0 npx eslint --fix
+    ) || { print_error "Frontend ESLint 自动修复后仍存在问题!"; exit 1; }
+  fi
+
+  # Prettier 格式化(暂存的可格式化文件)
+  if [ -n "$FRONTEND_FORMAT_FILES" ]; then
+    (
+      cd Frontend || exit 1
+      printf '%s\n' "$FRONTEND_FORMAT_FILES" | sed 's#^Frontend/##' | tr '\n' '\0' | xargs -0 npx prettier --write
+    ) || { print_error "Frontend Prettier 自动格式化失败!"; exit 1; }
+  fi
+
+  # 回写自动修复 / 格式化结果到暂存区
+  printf '%s\n' "$FRONTEND_STAGED" | tr '\n' '\0' | xargs -0 git add --
+
+  # 全量 TS 类型检查(类型错误无法增量,需整体校验)
+  print_section "Frontend: TypeScript 类型检查..."
+  (
+    cd Frontend || exit 1
+    npm run type-check
+  ) || { print_error "TypeScript 类型检查失败!"; exit 1; }
+else
+  print_skip "Frontend: 无暂存文件,跳过"
+fi
+
+# ─── Backend ────────────────────────────────────────────
+# 暂存的 Python 文件(排除自动生成的 migrations)
+BACKEND_PY=$(git diff --cached --name-only --diff-filter=ACM -- 'Backend/' | grep -E '\.py$' | grep -v '/migrations/' || true)
+
+if [ -n "$BACKEND_PY" ]; then
+  abort_if_partially_staged "Backend" "Backend/" "$BACKEND_PY"
+  ensure_command ruff
+
+  print_section "Backend: ruff format (自动格式化)..."
+  printf '%s\n' "$BACKEND_PY" | tr '\n' '\0' | xargs -0 ruff format \
+    || { print_error "Backend ruff format 执行失败!"; exit 1; }
+
+  print_section "Backend: ruff check --fix (自动修复)..."
+  printf '%s\n' "$BACKEND_PY" | tr '\n' '\0' | xargs -0 ruff check --fix \
+    || { print_error "Backend ruff 自动修复失败!"; exit 1; }
+
+  # 回写自动修复 / 格式化结果到暂存区
+  printf '%s\n' "$BACKEND_PY" | tr '\n' '\0' | xargs -0 git add --
+
+  # 终检:仍有无法自动修复的问题才报错
+  print_section "Backend: ruff check (最终检查)..."
+  printf '%s\n' "$BACKEND_PY" | tr '\n' '\0' | xargs -0 ruff check \
+    || { print_error "存在需要手动修复的 lint 错误!"; exit 1; }
+else
+  print_skip "Backend: 无暂存 Python 文件,跳过"
+fi
+
+echo ""
+echo "=== 所有检查通过 ==="

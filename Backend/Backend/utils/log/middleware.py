@@ -119,11 +119,17 @@ class RequestLogMiddleware:
 
         if status_code >= 500:
             request_logger.error(
-                base_msg + " ip=%s\n%s", *base_args, _get_client_ip(request), self._build_context(request)
+                base_msg + " ip=%s\n%s",
+                *base_args,
+                _get_client_ip(request),
+                self._build_context(request),
             )
         elif status_code >= 400:
             request_logger.warning(
-                base_msg + " ip=%s\n%s", *base_args, _get_client_ip(request), self._build_context(request)
+                base_msg + " ip=%s\n%s",
+                *base_args,
+                _get_client_ip(request),
+                self._build_context(request),
             )
         elif duration_ms >= getattr(settings, "REQUEST_LOG_SUCCESS_MIN_DURATION_MS", 0):
             request_logger.info(base_msg, *base_args)
@@ -138,7 +144,7 @@ class RequestLogMiddleware:
         if request.method in ("POST", "PUT", "PATCH"):
             try:
                 raw = request.data if hasattr(request, "data") else {}
-                body = _sanitize(raw if isinstance(raw, (dict, list)) else json.loads(raw))
+                body = _sanitize(raw if isinstance(raw, dict | list) else json.loads(raw))
                 body_str = str(body)
                 if len(body_str) > MAX_BODY_LENGTH:
                     body_str = body_str[:MAX_BODY_LENGTH] + "...(truncated)"

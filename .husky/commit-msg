@@ -1,0 +1,42 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+ROOT_DIR="$(git rev-parse --show-toplevel)"
+. "$ROOT_DIR/scripts/git-hooks/common.sh"
+
+cd "$ROOT_DIR"
+
+# 开关:总开关 HOOKS_ENABLED 或分项 HOOKS_COMMIT_MSG 为否时放行(配置见 .git-hooks.config)。
+if ! is_hook_enabled HOOKS_COMMIT_MSG; then
+  exit 0
+fi
+
+# 提交信息文件路径由 git 作为第一个参数传入。
+MESSAGE_FILE="$1"
+FIRST_LINE="$(sed -n '1p' "$MESSAGE_FILE" | tr -d '\r')"
+
+# 允许的提交类型(Conventional Commits)
+TYPE_PATTERN='feat|fix|docs|style|refactor|perf|test|chore'
+
+# 放行 git 自动生成 / 特殊提交,不做格式校验。
+if printf '%s' "$FIRST_LINE" | grep -Eq '^(Merge|Revert|fixup!|squash!) '; then
+  exit 0
+fi
+
+# 校验格式:<type>(<scope>)?!?: <subject>
+if ! printf '%s' "$FIRST_LINE" | grep -Eq "^($TYPE_PATTERN)(\\([A-Za-z0-9._/-]+\\))?!?: .+"; then
+  print_error "提交信息格式不正确。"
+  echo "  需要符合: <type>(<scope>): <subject>"
+  echo "  type 可选: $TYPE_PATTERN"
+  echo "  scope 可选,subject 必须包含中文。"
+  echo "  示例: feat(account): 新增用户注册接口"
+  exit 1
+fi
+
+# 主题须包含中文(团队约定,便于阅读提交历史)。
+SUBJECT="${FIRST_LINE#*: }"
+if ! printf '%s' "$SUBJECT" | grep -Eq '[一-龥]'; then
+  print_error "提交主题必须包含中文。"
+  echo "  当前主题: $SUBJECT"
+  exit 1
+fi

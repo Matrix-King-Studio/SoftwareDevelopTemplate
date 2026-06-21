@@ -7,3 +7,6 @@
 .omc
 .omx
 .omx/
+
+# Git hooks 个人覆盖配置(团队默认见 .git-hooks.config)
+.git-hooks.config.local

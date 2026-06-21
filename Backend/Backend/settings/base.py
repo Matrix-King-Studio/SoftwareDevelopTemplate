@@ -11,7 +11,6 @@ Django 项目基础配置(所有环境共用)。
 
 import os
 import sys
-
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.

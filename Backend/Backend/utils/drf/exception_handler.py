@@ -136,7 +136,7 @@ def custom_exception_handler(exc, context):
     if response is not None:
         # 403→401 修正:仅针对认证失败,不影响真正的权限拒绝
         if response.status_code == status.HTTP_403_FORBIDDEN and isinstance(
-            exc, (AuthenticationFailed, NotAuthenticated)
+            exc, AuthenticationFailed | NotAuthenticated
         ):
             response.status_code = status.HTTP_401_UNAUTHORIZED
 
@@ -155,7 +155,5 @@ def custom_exception_handler(exc, context):
         return response
 
     # ── 步骤 5:兜底未处理异常 ──
-    logger.error(
-        "Unhandled exception | %s | %s: %s", where, type(exc).__name__, exc, exc_info=True
-    )
+    logger.error("Unhandled exception | %s | %s: %s", where, type(exc).__name__, exc, exc_info=True)
     return _make_response(status.HTTP_500_INTERNAL_SERVER_ERROR, "服务器内部错误")

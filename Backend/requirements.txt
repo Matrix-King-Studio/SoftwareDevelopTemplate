@@ -10,7 +10,7 @@ drf-yasg[validation]==1.21.11
 django-import-export==4.3.14
 mysqlclient==2.2.7
 gunicorn==23.0.0
-pre-commit==4.5.1
+ruff==0.11.12           # lint + format(被 Makefile 与 .husky/ 的 git hooks 调用)
 
 # ── 认证与缓存(JWT 方案新增) ──
 PyJWT==2.10.1            # 自定义 JWT 签发/解析(access + refresh token)
