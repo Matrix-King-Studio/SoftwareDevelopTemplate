@@ -1,16 +1,23 @@
-import os
+from .base import *
 
-from .base import *  # noqa: F403
-
-# SECURITY WARNING: don't run with debug turned on in production!
+# 生产环境必须关闭 DEBUG,避免向用户暴露错误堆栈、settings 和环境信息。
 DEBUG = False
+# 生产环境 WSGI 入口,由 django-entrypoint-prod.sh 的 Gunicorn 命令使用。
+WSGI_APPLICATION = "Backend.wsgi_prod.application"
 
-# ── MySQL ──
-MYSQL_HOST = os.getenv("MYSQL_HOST", "127.0.0.1")
-MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
-MYSQL_NAME = os.getenv("MYSQL_NAME", "prod_db")
-MYSQL_USER = os.getenv("MYSQL_USER", "prod_user")
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "prod_password")
+# 日志配置。生产环境默认 INFO,且只记录慢成功请求。
+DJANGO_LOG_LEVEL = env_str("DJANGO_LOG_LEVEL", "INFO")
+REQUEST_LOG_LEVEL = env_str("REQUEST_LOG_LEVEL", DJANGO_LOG_LEVEL)
+REQUEST_LOG_SUCCESS_MIN_DURATION_MS = env_int("REQUEST_LOG_SUCCESS_MIN_DURATION_MS", 1000)
+configure_logging(DJANGO_LOG_LEVEL, REQUEST_LOG_LEVEL)
+
+# ── MySQL: 环境变量优先,缺省时使用生产占位值 ──
+# 实际部署时应在 docker-compose-prod.yml 的 environment 中替换 prod_mysql_*。
+MYSQL_HOST = env_str("MYSQL_HOST", "prod_mysql_host")
+MYSQL_PORT = env_str("MYSQL_PORT", "3306")
+MYSQL_NAME = env_str("MYSQL_NAME", "prod_mysql_name")
+MYSQL_USER = env_str("MYSQL_USER", "prod_mysql_user")
+MYSQL_PASSWORD = env_str("MYSQL_PASSWORD", "prod_mysql_password")
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
@@ -22,21 +29,23 @@ DATABASES = {
     }
 }
 
-# ── Redis ──
-# 注意:端口/库号必须是合法整数,默认值给数字字符串避免 int() 转换崩溃
-REDIS_HOST = os.getenv("REDIS_HOST", "127.0.0.1")
-REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
-REDIS_DB = int(os.getenv("REDIS_DB", "0"))
-REDIS_PASSWORD = os.getenv("REDIS_PASSWORD", "")
-
-_redis_auth = f":{REDIS_PASSWORD}@" if REDIS_PASSWORD else ""
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://{_redis_auth}{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}",
-        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
-    }
-}
+# ── Redis: 统一由 base.build_redis_cache_config 封装 ──
+# 生产环境默认使用 REDIS_DB=0。
+REDIS_HOST = env_str("REDIS_HOST", "prod_redis_host")
+REDIS_PORT = env_int("REDIS_PORT", 6379)
+REDIS_DB = env_int("REDIS_DB", 0)
+REDIS_PASSWORD = env_str("REDIS_PASSWORD", "prod_redis_password")
+REDIS_KEY_PREFIX = env_str("REDIS_KEY_PREFIX", "prod")
+CACHES = build_redis_cache_config(
+    host=REDIS_HOST,
+    port=REDIS_PORT,
+    db=REDIS_DB,
+    password=REDIS_PASSWORD,
+    key_prefix=REDIS_KEY_PREFIX,
+    timeout=env_int("REDIS_CACHE_TIMEOUT", 300),
+    socket_connect_timeout=env_int("REDIS_SOCKET_CONNECT_TIMEOUT", 5),
+    socket_timeout=env_int("REDIS_SOCKET_TIMEOUT", 5),
+)
 
 # 生产安全建议(按需启用)
 # SECURE_SSL_REDIRECT = True

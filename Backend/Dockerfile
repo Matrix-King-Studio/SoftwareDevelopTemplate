@@ -19,6 +19,6 @@ ADD ./requirements.txt /app/Backend/requirements.txt
 RUN pip install --retries 5 --timeout 120 -r requirements.txt
 
 ADD ./ /app/Backend
-RUN mkdir -p /usr/local/var/log/django
-RUN touch /usr/local/var/log/django/error.log
-RUN chmod 777 /usr/local/var/log/django/error.log
+RUN mkdir -p /app/Backend/logs
+RUN touch /app/Backend/logs/error.log
+RUN chmod 777 /app/Backend/logs/error.log

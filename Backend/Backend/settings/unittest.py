@@ -13,6 +13,7 @@ from .base import *  # noqa: F403
 DEBUG = True
 
 # ── 内存 SQLite:测试结束即销毁,不落任何文件,不碰 MySQL ──
+# 单元测试只验证业务逻辑和 API 行为,不依赖外部数据库服务。
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -21,6 +22,7 @@ DATABASES = {
 }
 
 # ── 本地进程内存缓存:不依赖 Redis ──
+# 避免单测环境因为 Redis 未启动而失败。
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",

@@ -24,16 +24,41 @@ python manage.py createsuperuser
 
 开发环境和测试环境，用户名和密码在都是 admin。
 
-3. 在本地（一般是自己的电脑）开发的话，通过 `python manage.py runserver`启动，默认加载的是 `Backend/Backend/settings/dev.py`，即在本地创建一个 db.sqlite3 数据库，所有的开发数据都在本地；
+3. 在本地（一般是自己的电脑）开发的话，通过 `python manage.py runserver`启动，默认加载的是 `Backend/Backend/settings/dev.py`。`dev` 环境同样使用 MySQL 和 Redis,连接信息从 `.env.dev` 或系统环境变量读取；
 
 ## 自动部署
 
-本地开发完成后，代码需要上传到 GitHub 自己的分支，然后创建 PR 合并到 test 分支，此时会触发测试环境的自动部署，模板中的默认配置可能会导致部署失败，因此需要修改一下 `docker-compose.yml` 文件和 `.github\workflows\Backend.yml` 中的占位符。
+本地开发完成后，代码需要上传到 GitHub 自己的分支，然后创建 PR 合并到 test 分支，此时会触发测试环境的自动部署，模板中的默认配置可能会导致部署失败，因此需要修改一下 `docker-compose.yml`、`.github\workflows\Backend.yml` 和对应环境变量文件中的占位符。
 
 全局搜索关键词并替换：
 - {{DOCKER_NAMESPACE}}：其替换为这个项目的英文名称，注意要小写；
 - {{test_django_port}} / {{prod_django_port}}：将其替换为测试/生产环境的端口；
-- {{test_mysql_*}} and {{test_redis_*}}：将其替换为测试/生产环境的配置信息。
+- `test_mysql_*` / `test_redis_*`：在 `docker-compose-test.yml` 的 `environment` 中替换为测试环境配置；
+- `prod_mysql_*` / `prod_redis_*`：在 `docker-compose-prod.yml` 的 `environment` 中替换为生产环境配置。
+
+### 部署启动参数
+
+测试和生产环境分别通过 `django-entrypoint-test.sh` / `django-entrypoint-prod.sh`
+启动,并显式加载对应 settings 与 Gunicorn 配置。settings 和 Gunicorn 配置都会读取环境变量,且代码里保留默认值。
+
+- settings 会按当前 `DJANGO_SETTINGS_MODULE` 自动加载 `Backend/.env.dev` /
+  `Backend/.env.test` / `Backend/.env.prod`;系统环境变量优先,env 文件只补默认值;
+- `test` 通过 `GUNICORN_ENV_NAME=test` 使用 `gunicorn_config.py`,默认 `GUNICORN_WORKERS=1`、`GUNICORN_THREADS=1`,
+  记录全部成功请求日志(`REQUEST_LOG_SUCCESS_MIN_DURATION_MS=0`);
+- `prod` 通过 `GUNICORN_ENV_NAME=prod` 使用 `gunicorn_config.py`,默认 `GUNICORN_WORKERS=3`、`GUNICORN_THREADS=2`,
+  只记录耗时不低于 1000ms 的成功请求日志;
+- Django 与 Gunicorn 日志固定写入容器内 `/app/Backend/logs`,
+  并通过 compose 的 `./log:/app/Backend/logs` 挂载到宿主机;
+- `docker-compose-test.yml` / `docker-compose-prod.yml` 的环境变量直接写在 yml 的
+  `environment` 块中,并使用 `${VAR:-default}` 提供默认值;
+- `.env.dev` / `.env.test` / `.env.prod` 仍可供本地直接运行 Django 时使用,
+  但真实 `.env.*` 已被 `.gitignore` 忽略,只提交 `.env.*.example` 作为参考模板;
+- `SECRET_KEY` 支持系统环境变量、`.env.<env>` 和 compose environment 覆盖,
+  测试/生产部署必须替换为独立随机值,不要使用模板占位值;
+- `ALLOWED_HOSTS`、`CSRF_TRUSTED_ORIGINS`、`CORS_*` 均支持环境变量覆盖,
+  生产环境建议把 `ALLOWED_HOSTS` 收紧为实际域名/IP,并将 `CORS_ORIGIN_ALLOW_ALL=false`
+  后配置 `CORS_ALLOWED_ORIGINS`;
+- Redis 参数从环境变量读取,由 `base.py` 的 `build_redis_cache_config()` 统一封装。
 
 ## API 架构与规范
 
@@ -114,9 +139,8 @@ class ArticleListView(StandardAPIView):
 
 ### Redis 与缓存
 
-- `dev` 环境使用进程内存缓存(LocMemCache),**不依赖 Redis,开箱即跑**;
-- `test` / `prod` 使用 `django-redis` 接入 Redis,连接信息从环境变量读取
-  (`REDIS_HOST` / `REDIS_PORT` / `REDIS_DB` / `REDIS_PASSWORD`)。
+- `dev` / `test` / `prod` 均使用 `django-redis` 接入 Redis,连接信息从环境变量读取,
+  并通过 `REDIS_KEY_PREFIX` 区分缓存 key;未提供环境变量时使用 settings 中的默认值。
 
 ### 依赖
 
