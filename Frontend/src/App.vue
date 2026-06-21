@@ -1,7 +1,3 @@
-<script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router';
-</script>
-
 <template>
   <div id="app">
     <header class="app-header">
@@ -13,7 +9,9 @@ import { RouterLink, RouterView } from 'vue-router';
 
         <nav class="app-nav" aria-label="主导航">
           <RouterLink to="/" class="nav-link" exact-active-class="is-active">首页</RouterLink>
-          <RouterLink to="/signup_login" class="nav-link" active-class="is-active">登录/注册</RouterLink>
+          <RouterLink to="/signup_login" class="nav-link" active-class="is-active"
+            >登录/注册</RouterLink
+          >
         </nav>
       </div>
     </header>
@@ -23,6 +21,10 @@ import { RouterLink, RouterView } from 'vue-router';
     </main>
   </div>
 </template>
+
+<script setup lang="ts">
+import { RouterLink, RouterView } from 'vue-router'
+</script>
 
 <style scoped>
 #app {

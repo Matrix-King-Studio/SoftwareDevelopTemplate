@@ -4,9 +4,7 @@
       <div class="container hero-content">
         <p class="hero-eyebrow">Frontend</p>
         <h1 class="hero-title">把产品想法更快交付到用户手里</h1>
-        <p class="hero-subtitle">
-          统一工程模板、账号体系和页面规范，减少重复搭建时间。
-        </p>
+        <p class="hero-subtitle">统一工程模板、账号体系和页面规范，减少重复搭建时间。</p>
         <div class="hero-actions">
           <router-link to="/signup_login" class="btn btn-primary">立即开始</router-link>
           <a href="#features" class="btn btn-secondary">查看能力</a>
@@ -79,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import UserProfile from '@/components/account/UserProfile.vue';
+import UserProfile from '@/components/account/UserProfile.vue'
 </script>
 
 <style scoped>
@@ -97,8 +95,7 @@ import UserProfile from '@/components/account/UserProfile.vue';
 .hero-section {
   padding: 4.6rem 0 3.4rem;
   border-bottom: 1px solid var(--color-border);
-  background:
-    linear-gradient(130deg, #f9fbff 0%, #eef4ff 55%, #eaf6f2 100%);
+  background: linear-gradient(130deg, #f9fbff 0%, #eef4ff 55%, #eaf6f2 100%);
 }
 
 .hero-content {

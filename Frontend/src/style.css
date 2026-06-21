@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --color-bg-primary: #f4f7fb;
@@ -55,13 +55,7 @@ body {
     radial-gradient(circle at 8% -10%, rgba(15, 104, 216, 0.08), transparent 45%),
     radial-gradient(circle at 92% 3%, rgba(23, 156, 61, 0.06), transparent 32%),
     var(--color-bg-primary);
-  font-family:
-    "PingFang SC",
-    "Microsoft YaHei",
-    "Helvetica Neue",
-    Helvetica,
-    Arial,
-    sans-serif;
+  font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   line-height: 1.55;
 }
 

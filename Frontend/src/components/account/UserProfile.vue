@@ -6,7 +6,7 @@
       </div>
       <h3 class="profile-name">{{ accountStore.userInfo?.username || '用户' }}</h3>
       <p class="profile-label">已登录用户</p>
-      <button @click="handleLogout" class="btn btn-error">退出登录</button>
+      <button class="btn btn-error" @click="handleLogout">退出登录</button>
     </div>
     <div v-else class="profile-card not-logged-in">
       <div class="not-logged-icon">👤</div>
@@ -18,23 +18,23 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useAccountStore } from '@/stores/account';
-import { useRouter } from 'vue-router';
-import { RouterLink } from 'vue-router';
+import { computed } from 'vue'
+import { useAccountStore } from '@/stores/account'
+import { useRouter } from 'vue-router'
+import { RouterLink } from 'vue-router'
 
-const accountStore = useAccountStore();
-const router = useRouter();
+const accountStore = useAccountStore()
+const router = useRouter()
 
 const userInitials = computed(() => {
-  const username = accountStore.userInfo?.username || '用户';
-  return username.slice(0, 2).toUpperCase();
-});
+  const username = accountStore.userInfo?.username || '用户'
+  return username.slice(0, 2).toUpperCase()
+})
 
 const handleLogout = () => {
-  accountStore.logout();
-  router.push('/signup_login');
-};
+  accountStore.logout()
+  router.push('/signup_login')
+}
 </script>
 
 <style scoped>

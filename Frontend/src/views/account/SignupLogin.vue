@@ -47,23 +47,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import LoginForm from '@/components/account/LoginForm.vue';
-import RegisterForm from '@/components/account/RegisterForm.vue';
+import { ref } from 'vue'
+import LoginForm from '@/components/account/LoginForm.vue'
+import RegisterForm from '@/components/account/RegisterForm.vue'
 
-const activeTab = ref<'login' | 'register'>('login');
+const activeTab = ref<'login' | 'register'>('login')
 
 const switchTab = (tab: 'login' | 'register') => {
-  activeTab.value = tab;
-};
+  activeTab.value = tab
+}
 
 const handleLoginSuccess = () => {
   // 登录成功后的跳转逻辑已在 LoginForm 内处理
-};
+}
 
 const handleRegisterSuccess = () => {
-  activeTab.value = 'login';
-};
+  activeTab.value = 'login'
+}
 </script>
 
 <style scoped>
@@ -88,7 +88,7 @@ const handleRegisterSuccess = () => {
 
 .auth-card::before,
 .auth-card::after {
-  content: "";
+  content: '';
   position: absolute;
   border-radius: 50%;
   pointer-events: none;

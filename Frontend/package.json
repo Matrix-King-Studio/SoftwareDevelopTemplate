@@ -6,8 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
+    "build:dev": "vue-tsc -b && vite build --mode development",
+    "build:test": "vue-tsc -b && vite build --mode test",
+    "build:prod": "vue-tsc -b && vite build --mode prod",
     "type-check": "vue-tsc --noEmit",
     "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"src/**/*.{js,ts,vue,json,css,scss,md}\" \"*.{js,ts,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,ts,vue,json,css,scss,md}\" \"*.{js,ts,json,md}\"",
     "// --- 单元测试 (Vitest) ---": "",
     "test:unit": "vitest",
     "// --- E2E 测试 (Playwright) ---": "",
@@ -31,13 +38,21 @@
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@types/node": "^24.10.1",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.8.1",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-vue": "^9.32.0",
+    "globals": "^16.5.0",
     "husky": "^8.0.3",
+    "prettier": "^3.7.4",
     "sass-embedded": "^1.70.0",
     "typescript": "~5.9.3",
-    "vite": "^7.2.2",
+    "typescript-eslint": "^8.46.4",
+    "vue-eslint-parser": "^9.4.3",
     "vue-tsc": "^3.2.6"
   }
 }

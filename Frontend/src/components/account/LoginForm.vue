@@ -47,44 +47,43 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed } from 'vue';
-import { useAccountStore } from '@/stores/account';
-import { useRouter } from 'vue-router';
+import { reactive, ref, computed } from 'vue'
+import { useAccountStore } from '@/stores/account'
+import { useRouter } from 'vue-router'
 
 const emit = defineEmits<{
   'login-success': []
-}>();
+}>()
 
-const accountStore = useAccountStore();
-const router = useRouter();
+const accountStore = useAccountStore()
+const router = useRouter()
 
 const formData = reactive({
   username: '',
-  password: ''
-});
+  password: '',
+})
 
-const loading = computed(() => accountStore.isLoading);
-const errorMessage = ref('');
+const loading = computed(() => accountStore.isLoading)
+const errorMessage = ref('')
 
 const handleSubmit = async () => {
   if (!formData.username || !formData.password) {
-    errorMessage.value = '请填写完整的登录信息';
-    return;
+    errorMessage.value = '请填写完整的登录信息'
+    return
   }
 
-  errorMessage.value = '';
+  errorMessage.value = ''
 
-  const result = await accountStore.login(formData.username, formData.password);
+  const result = await accountStore.login(formData.username, formData.password)
 
   if (result.success) {
-    console.log('登录成功');
-    emit('login-success');
-    router.push('/');
+    emit('login-success')
+    router.push('/')
   } else {
-    console.error('登录失败:', result.error);
-    errorMessage.value = result.error || '登录失败，请检查用户名和密码';
+    console.error('登录失败:', result.error)
+    errorMessage.value = result.error || '登录失败，请检查用户名和密码'
   }
-};
+}
 </script>
 
 <style scoped>

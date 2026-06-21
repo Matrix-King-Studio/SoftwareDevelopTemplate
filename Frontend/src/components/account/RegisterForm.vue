@@ -65,58 +65,57 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed } from 'vue';
-import { useAccountStore } from '@/stores/account';
+import { reactive, ref, computed } from 'vue'
+import { useAccountStore } from '@/stores/account'
 
 const emit = defineEmits<{
   'register-success': []
-}>();
+}>()
 
-const accountStore = useAccountStore();
+const accountStore = useAccountStore()
 
 const formData = reactive({
   username: '',
   password1: '',
   password2: '',
-  email: ''
-});
+  email: '',
+})
 
-const loading = computed(() => accountStore.isLoading);
-const errorMessage = ref('');
+const loading = computed(() => accountStore.isLoading)
+const errorMessage = ref('')
 
 const handleSubmit = async () => {
   if (!formData.username || !formData.email || !formData.password1 || !formData.password2) {
-    errorMessage.value = '请填写完整的注册信息';
-    return;
+    errorMessage.value = '请填写完整的注册信息'
+    return
   }
 
   if (formData.password1 !== formData.password2) {
-    errorMessage.value = '两次输入的密码不一致';
-    return;
+    errorMessage.value = '两次输入的密码不一致'
+    return
   }
 
   if (formData.password1.length < 6) {
-    errorMessage.value = '密码长度至少为6位';
-    return;
+    errorMessage.value = '密码长度至少为6位'
+    return
   }
 
-  errorMessage.value = '';
+  errorMessage.value = ''
 
   const result = await accountStore.register(
     formData.username,
     formData.email,
     formData.password1,
     formData.password2
-  );
+  )
 
   if (result.success) {
-    console.log('注册成功');
-    emit('register-success');
+    emit('register-success')
   } else {
-    console.error('注册失败:', result.error);
-    errorMessage.value = result.error || '注册失败';
+    console.error('注册失败:', result.error)
+    errorMessage.value = result.error || '注册失败'
   }
-};
+}
 </script>
 
 <style scoped>

@@ -23,7 +23,7 @@ jobs:
           cd Frontend
           npm install
           if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
-            npm run build -- --mode production
+            npm run build -- --mode prod
           else
             npm run build -- --mode test
           fi
