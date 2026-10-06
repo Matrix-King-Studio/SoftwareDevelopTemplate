@@ -1,7 +1,7 @@
 """
 统一分页工具。
 
-本模板所有列表接口统一使用 ``StandardPageNumberPagination`` 分页。
+本项目所有列表接口统一使用 ``StandardPageNumberPagination`` 分页。
 
 分页请求参数:
 - ``page``：页码,默认 1

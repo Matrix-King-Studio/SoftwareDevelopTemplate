@@ -1,4 +1,4 @@
-# Django 项目模板基础配置
+# Django 项目基础配置
 Django==5.2.10
 djangorestframework==3.16.1
 markdown==3.10
@@ -10,13 +10,9 @@ drf-yasg[validation]==1.21.11
 django-import-export==4.3.14
 mysqlclient==2.2.7
 gunicorn==23.0.0
-ruff==0.11.12           # lint + format(被 Makefile 与 .husky/ 的 git hooks 调用)
+ruff==0.11.12
 
-# ── 认证与缓存(JWT 方案新增) ──
+# ── 认证与缓存(JWT) ──
 PyJWT==2.10.1            # 自定义 JWT 签发/解析(access + refresh token)
 redis==5.2.1            # Redis 客户端,用于缓存与单设备会话
 django-redis==5.4.0     # Django 缓存后端接入 Redis
-
-# ── 已停用(改为纯自定义 JWT 后不再需要,保留行便于追溯) ──
-# dj-rest-auth[with_social]==7.0.1      # 旧 Token 认证方案,已被 utils/auth 取代
-# django-allauth[socialaccount]==65.13.1  # 旧注册/登录流程,已被自定义视图取代

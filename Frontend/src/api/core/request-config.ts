@@ -7,7 +7,7 @@ export type DedupStrategy = 'cancel-old' | 'reject-new'
 /**
  * 扩展的请求配置
  *
- * 在 AxiosRequestConfig 基础上增加模板自定义的控制项。
+ * 在 AxiosRequestConfig 基础上增加项目请求层自定义的控制项。
  */
 export interface RequestConfig extends AxiosRequestConfig {
   /** 是否跳过认证（登录/注册等匿名接口设为 true） */

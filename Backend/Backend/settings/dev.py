@@ -11,13 +11,13 @@ REQUEST_LOG_LEVEL = env_str("REQUEST_LOG_LEVEL", DJANGO_LOG_LEVEL)
 REQUEST_LOG_SUCCESS_MIN_DURATION_MS = env_int("REQUEST_LOG_SUCCESS_MIN_DURATION_MS", 0)
 configure_logging(DJANGO_LOG_LEVEL, REQUEST_LOG_LEVEL)
 
-# ── MySQL: 环境变量优先,缺省时使用开发占位值 ──
+# ── MySQL: 环境变量优先,缺省时使用开发默认值 ──
 # 部署/本地可通过系统环境变量或 Backend/.env.dev 覆盖这些值。
-MYSQL_HOST = env_str("MYSQL_HOST", "dev_mysql_host")
+MYSQL_HOST = env_str("MYSQL_HOST", "{{DEV_MYSQL_HOST}}")
 MYSQL_PORT = env_str("MYSQL_PORT", "3306")
-MYSQL_NAME = env_str("MYSQL_NAME", "dev_mysql_name")
-MYSQL_USER = env_str("MYSQL_USER", "dev_mysql_user")
-MYSQL_PASSWORD = env_str("MYSQL_PASSWORD", "dev_mysql_password")
+MYSQL_NAME = env_str("MYSQL_NAME", "{{DEV_MYSQL_NAME}}")
+MYSQL_USER = env_str("MYSQL_USER", "{{DEV_MYSQL_USER}}")
+MYSQL_PASSWORD = env_str("MYSQL_PASSWORD", "{{DEV_MYSQL_PASSWORD}}")
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
@@ -31,10 +31,10 @@ DATABASES = {
 
 # ── Redis: 统一由 base.build_redis_cache_config 封装 ──
 # 开发环境默认使用 REDIS_DB=2,避免和 test/prod 默认库冲突。
-REDIS_HOST = env_str("REDIS_HOST", "dev_redis_host")
+REDIS_HOST = env_str("REDIS_HOST", "{{DEV_REDIS_HOST}}")
 REDIS_PORT = env_int("REDIS_PORT", 6379)
 REDIS_DB = env_int("REDIS_DB", 2)
-REDIS_PASSWORD = env_str("REDIS_PASSWORD", "dev_redis_password")
+REDIS_PASSWORD = env_str("REDIS_PASSWORD", "{{DEV_REDIS_PASSWORD}}")
 REDIS_KEY_PREFIX = env_str("REDIS_KEY_PREFIX", "dev")
 CACHES = build_redis_cache_config(
     host=REDIS_HOST,

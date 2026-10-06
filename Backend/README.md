@@ -1,155 +1,384 @@
-# {{ProjectChineseName}}-后端
+# {{ProjectChineseName}} 后端
 
-本项目后端基于 Django 项目模板创建，提前内置了 DRF 等第三方开发库，可以极大的提高开发效率，避免重复造轮子。
+后端基于 Django + Django REST Framework，内置自定义用户模型、JWT Bearer 认证、统一响应、统一异常处理、请求日志、MySQL、Redis、Gunicorn 和 Docker Compose 部署配置。
 
-跟标准的 Django 项目的区别还有：
-1. settings 配置文件转移到了 Backend/Backend/settings 文件夹内，base.py 中是基础配置，dev.py 代表的是开发环境配置，test.py 代表的是测试环境配置，prod.py 代表的是生产环境配置；
-2. startapp 创建的应用转移到了 Backend/Backend/apps 文件夹内，每一个文件夹代表了一个应用，如果要新建应用的话，需要先 `cd Backend/apps`然后在再`python ../../manage.py startapp ApplicationName`（注意应用首字母要大写）；
-3. WSGI 入口按环境命名：`wsgi_dev.py` 是本地开发环境，`wsgi_test.py` 是测试环境，`wsgi_prod.py` 是生产环境；Gunicorn 自身配置放在 `gunicorn_config.py`。
+这份后端代码拿到新项目后不能直接上线。需要先按本文完成项目命名、数据库、Redis、密钥、域名、跨域、部署脚本和 CI/CD 配置。
 
-## 快速开始
+## 目录结构
 
-1. 项目代码拉取下来后，首先需要迁移数据库
+```text
+Backend/
+├── Backend/
+│   ├── apps/Account/          账号模型、序列化器、视图、路由、测试
+│   ├── settings/              dev/test/prod/unittest 分环境配置
+│   ├── utils/auth/            JWT、认证、权限
+│   ├── utils/drf/             统一响应、分页、异常处理
+│   ├── utils/log/             requestId 和请求日志
+│   ├── urls.py
+│   ├── wsgi_dev.py
+│   ├── wsgi_test.py
+│   └── wsgi_prod.py
+├── .env.dev.example
+├── .env.test.example
+├── .env.prod.example
+├── docker-compose-test.yml
+├── docker-compose-prod.yml
+├── django-entrypoint-test.sh
+├── django-entrypoint-prod.sh
+├── gunicorn_config.py
+├── Makefile
+└── requirements.txt
+```
+
+## 拿到模板后必须修改
+
+### 0. 全局搜索替换
+
+后端保留 `{{...}}` 占位符用于快速初始化。先按根目录 [README.md](../README.md) 的全局替换表处理以下关键 token：
+
+- `{{ProjectChineseName}}`
+- `{{DOCKER_NAMESPACE}}`
+- `{{TEST_DJANGO_PORT}}` / `{{PROD_DJANGO_PORT}}`
+- `{{DEV_MYSQL_NAME}}` / `{{TEST_MYSQL_NAME}}` / `{{PROD_MYSQL_NAME}}`
+- `{{DEV_MYSQL_USER}}` / `{{TEST_MYSQL_USER}}` / `{{PROD_MYSQL_USER}}`
+- `{{DEV_MYSQL_PASSWORD}}` / `{{TEST_MYSQL_PASSWORD}}` / `{{PROD_MYSQL_PASSWORD}}`
+- `{{DEV_MYSQL_HOST}}` / `{{TEST_MYSQL_HOST}}` / `{{PROD_MYSQL_HOST}}`
+- `{{DEV_REDIS_PASSWORD}}` / `{{TEST_REDIS_PASSWORD}}` / `{{PROD_REDIS_PASSWORD}}`
+- `{{DEV_REDIS_HOST}}` / `{{TEST_REDIS_HOST}}` / `{{PROD_REDIS_HOST}}`
+- `{{DEV_SECRET_KEY}}` / `{{TEST_SECRET_KEY}}` / `{{PROD_SECRET_KEY}}`
+- `{{DEV_ALLOWED_HOSTS}}` / `{{TEST_ALLOWED_HOSTS}}` / `{{PROD_ALLOWED_HOSTS}}`
+- `{{DEV_CSRF_TRUSTED_HOSTS}}` / `{{TEST_CSRF_TRUSTED_HOSTS}}` / `{{PROD_CSRF_TRUSTED_HOSTS}}`
+
+### 1. 项目名称
+
+需要修改的位置：
+
+- `Backend/Backend/apps/Account/admin.py`：Django Admin 标题。
+- `Backend/docker-compose-test.yml`：`name`、`image`、`container_name`、network。
+- `Backend/docker-compose-prod.yml`：`name`、`image`、`container_name`、network。
+- `.github/workflows/Backend.yml`：Docker 镜像 tag。
+- 数据库名：`MYSQL_NAME`。
+- Redis key 前缀：`REDIS_KEY_PREFIX`。
+
+命名建议：
+
+```text
+项目英文名：smart-campus
+镜像名：registry.cn-hangzhou.aliyuncs.com/matrix-studio/smart-campus
+测试库：smart_campus_test
+生产库：smart_campus_prod
+Redis 前缀：smart-campus-test / smart-campus-prod
+```
+
+### 2. 环境变量文件
+
+真实环境变量文件不提交 Git：
+
+- `Backend/.env.dev`
+- `Backend/.env.test`
+- `Backend/.env.prod`
+
+提交到 Git 的只有：
+
+- `Backend/.env.dev.example`
+- `Backend/.env.test.example`
+- `Backend/.env.prod.example`
+
+初始化新项目时可以复制：
+
+```shell
+cd Backend
+cp .env.dev.example .env.dev
+cp .env.test.example .env.test
+cp .env.prod.example .env.prod
+```
+
+配置优先级：
+
+1. 系统环境变量 / Docker Compose `environment`
+2. `.env.<env>`
+3. settings 代码里的默认值
+
+Docker Compose 文件不使用 `env_file`，部署环境变量直接写在 `docker-compose-test.yml` / `docker-compose-prod.yml` 的 `environment` 中。
+
+### 3. MySQL
+
+三套真实运行环境 `dev` / `test` / `prod` 都使用 MySQL。
+
+必须确认：
+
+- `MYSQL_HOST`
+- `MYSQL_PORT`
+- `MYSQL_NAME`
+- `MYSQL_USER`
+- `MYSQL_PASSWORD`
+
+建议每个环境使用独立数据库：
+
+```text
+dev:  <project>_dev
+test: <project>_test
+prod: <project>_prod
+```
+
+不要让测试环境和生产环境共用数据库。不要把生产数据库密码写入代码或 README。
+
+### 4. Redis
+
+三套真实运行环境 `dev` / `test` / `prod` 都使用 Redis，配置由 `Backend/Backend/settings/base.py` 的 `build_redis_cache_config()` 统一封装。
+
+必须确认：
+
+- `REDIS_HOST`
+- `REDIS_PORT`
+- `REDIS_DB`
+- `REDIS_PASSWORD`
+- `REDIS_KEY_PREFIX`
+- `REDIS_CACHE_TIMEOUT`
+- `REDIS_SOCKET_CONNECT_TIMEOUT`
+- `REDIS_SOCKET_TIMEOUT`
+
+默认 DB 约定：
+
+- `prod`: `0`
+- `test`: `1`
+- `dev`: `2`
+
+如果多个项目共用 Redis，必须设置独立 `REDIS_KEY_PREFIX`。
+
+### 5. Django 安全项
+
+生产部署前必须修改：
+
+- `SECRET_KEY`：使用独立随机值。
+- `ALLOWED_HOSTS`：只保留实际域名/IP。
+- `CSRF_TRUSTED_ORIGINS`：配置真实 HTTPS 来源。
+- `CORS_ORIGIN_ALLOW_ALL`：生产建议为 `false`。
+- `CORS_ALLOWED_ORIGINS`：配置前端真实域名。
+
+示例：
+
+```env
+SECRET_KEY=<随机强密钥>
+ALLOWED_HOSTS=api.example.com,127.0.0.1
+CSRF_TRUSTED_ORIGINS=https://api.example.com
+CORS_ORIGIN_ALLOW_ALL=false
+CORS_ALLOWED_ORIGINS=https://app.example.com
+```
+
+### 6. JWT
+
+JWT 配置位于 `Backend/Backend/settings/base.py`：
+
+- `JWT_SECRET_KEY`：默认回退到 `SECRET_KEY`，如需独立签名密钥可单独配置。
+- `JWT_ACCESS_TOKEN_TTL_MINUTES`：access token 有效期。
+- `JWT_REFRESH_TOKEN_TTL_DAYS`：refresh token 有效期。
+
+当前认证接口：
+
+| 接口 | 方法 | 说明 | 认证 |
+| --- | --- | --- | --- |
+| `/auth/registration/` | POST | 注册 | 公开 |
+| `/auth/login/` | POST | 登录 | 公开 |
+| `/auth/user/` | GET | 当前用户 | 需要 access token |
+| `/auth/logout/` | POST | 登出并递增 token_version | 需要 access token |
+| `/auth/token/refresh/` | POST | 刷新 access token | 公开 |
+
+前端通过 `/api` 代理到后端时，请求路径为 `/api/auth/login/`，后端实际路由为 `/auth/login/`。
+
+### 7. Gunicorn
+
+只保留一个 `Backend/gunicorn_config.py`。入口脚本通过 `GUNICORN_ENV_NAME` 区分环境：
+
+- `django-entrypoint-test.sh`: `GUNICORN_ENV_NAME=test`
+- `django-entrypoint-prod.sh`: `GUNICORN_ENV_NAME=prod`
+
+默认并发：
+
+- test：`GUNICORN_WORKERS=1`、`GUNICORN_THREADS=1`
+- prod：`GUNICORN_WORKERS=3`、`GUNICORN_THREADS=2`
+
+可按服务器资源调整：
+
+```env
+GUNICORN_WORKERS=3
+GUNICORN_THREADS=2
+GUNICORN_TIMEOUT=60
+GUNICORN_LOG_LEVEL=info
+```
+
+日志写入：
+
+- Django 日志：`/app/Backend/logs/django.log`
+- Django 错误日志：`/app/Backend/logs/error.log`
+- Gunicorn access log：`/app/Backend/logs/gunicorn-access.log`
+- Gunicorn error log：`/app/Backend/logs/gunicorn-error.log`
+
+Compose 默认挂载：
+
+```yaml
+./log:/app/Backend/logs
+./media:/app/Backend/media
+```
+
+### 8. Docker Compose
+
+测试环境：
+
+```shell
+cd Backend
+make pull_test
+make restart_test
+```
+
+生产环境：
+
+```shell
+cd Backend
+make pull_prod
+make restart_prod
+```
+
+新项目必须检查：
+
+- 镜像仓库地址是否正确。
+- 宿主机端口是否冲突。
+- `container_name` 是否与其他项目冲突。
+- network 名是否与其他项目冲突。
+- `./log` 和 `./media` 目录权限是否正确。
+- `MYSQL_HOST` / `REDIS_HOST` 在容器内是否可访问。
+
+如果 MySQL/Redis 跑在宿主机，容器里的 `127.0.0.1` 指向容器自身，不是宿主机。需要改为宿主机内网 IP、Docker network service name，或 `host.docker.internal` 等可达地址。
+
+### 9. GitHub Actions
+
+后端部署工作流：`.github/workflows/Backend.yml`
+
+必须修改：
+
+- Docker 镜像 tag 中的项目英文名。
+- 分支触发规则。
+- 远程服务器部署路径。
+- 镜像仓库登录方式。
+
+必须配置 GitHub Secrets：
+
+```text
+ALI_DOCKER_USERNAME
+ALI_DOCKER_PASSWORD
+TEST_SSH_PRIVATE_KEY
+TEST_REMOTE_HOST
+TEST_REMOTE_USER
+TEST_DEPLOY_TARGET
+PROD_SSH_PRIVATE_KEY
+PROD_REMOTE_HOST
+PROD_REMOTE_USER
+PROD_DEPLOY_TARGET
+```
+
+## 本地开发
+
+```shell
+cd Backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.dev.example .env.dev
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+默认 settings：
+
+```text
+Backend.settings.dev
+```
+
+## 数据库迁移
+
+新增或修改模型后：
 
 ```shell
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-2. 创建超级管理员账户
+提交代码时必须提交 migrations 文件。不要让服务器自动生成迁移文件后不回传仓库，否则多环境迁移历史会不一致。
+
+自定义用户模型 `AUTH_USER_MODEL = "Account.User"` 必须在项目首次迁移前确定。已经迁移上线后，不要随意替换用户模型。
+
+## 单元测试
+
+自动化单元测试使用 `Backend.settings.unittest`：
+
+- SQLite 内存数据库
+- LocMemCache
+- 不连接 MySQL
+- 不连接 Redis
+
+运行：
 
 ```shell
-python manage.py createsuperuser
+make test
 ```
 
-开发环境和测试环境，用户名和密码在都是 admin。
+## 质量检查
 
-3. 在本地（一般是自己的电脑）开发的话，通过 `python manage.py runserver`启动，默认加载的是 `Backend/Backend/settings/dev.py`。`dev` 环境同样使用 MySQL 和 Redis,连接信息从 `.env.dev` 或系统环境变量读取；
+```shell
+make lint
+make format-check
+python manage.py check --settings=Backend.settings.dev
+python manage.py check --settings=Backend.settings.test
+python manage.py check --settings=Backend.settings.prod
+python manage.py check --settings=Backend.settings.unittest
+```
 
-## 自动部署
+## 新增业务应用
 
-本地开发完成后，代码需要上传到 GitHub 自己的分支，然后创建 PR 合并到 test 分支，此时会触发测试环境的自动部署，模板中的默认配置可能会导致部署失败，因此需要修改一下 `docker-compose.yml`、`.github\workflows\Backend.yml` 和对应环境变量文件中的占位符。
+应用统一放在 `Backend/Backend/apps/` 下。
 
-全局搜索关键词并替换：
-- {{DOCKER_NAMESPACE}}：其替换为这个项目的英文名称，注意要小写；
-- {{test_django_port}} / {{prod_django_port}}：将其替换为测试/生产环境的端口；
-- `test_mysql_*` / `test_redis_*`：在 `docker-compose-test.yml` 的 `environment` 中替换为测试环境配置；
-- `prod_mysql_*` / `prod_redis_*`：在 `docker-compose-prod.yml` 的 `environment` 中替换为生产环境配置。
+```shell
+cd Backend/Backend/apps
+python ../../manage.py startapp ApplicationName
+```
 
-### 部署启动参数
+新增后需要：
 
-测试和生产环境分别通过 `django-entrypoint-test.sh` / `django-entrypoint-prod.sh`
-启动,并显式加载对应 settings 与 Gunicorn 配置。settings 和 Gunicorn 配置都会读取环境变量,且代码里保留默认值。
+- 在 `Backend/Backend/settings/base.py` 的 `INSTALLED_APPS` 添加应用。
+- 添加 `urls.py` 并接入 `Backend/Backend/urls.py`。
+- 为模型生成 migrations。
+- 添加 API 测试。
 
-- settings 会按当前 `DJANGO_SETTINGS_MODULE` 自动加载 `Backend/.env.dev` /
-  `Backend/.env.test` / `Backend/.env.prod`;系统环境变量优先,env 文件只补默认值;
-- `test` 通过 `GUNICORN_ENV_NAME=test` 使用 `gunicorn_config.py`,默认 `GUNICORN_WORKERS=1`、`GUNICORN_THREADS=1`,
-  记录全部成功请求日志(`REQUEST_LOG_SUCCESS_MIN_DURATION_MS=0`);
-- `prod` 通过 `GUNICORN_ENV_NAME=prod` 使用 `gunicorn_config.py`,默认 `GUNICORN_WORKERS=3`、`GUNICORN_THREADS=2`,
-  只记录耗时不低于 1000ms 的成功请求日志;
-- Django 与 Gunicorn 日志固定写入容器内 `/app/Backend/logs`,
-  并通过 compose 的 `./log:/app/Backend/logs` 挂载到宿主机;
-- `docker-compose-test.yml` / `docker-compose-prod.yml` 的环境变量直接写在 yml 的
-  `environment` 块中,并使用 `${VAR:-default}` 提供默认值;
-- `.env.dev` / `.env.test` / `.env.prod` 仍可供本地直接运行 Django 时使用,
-  但真实 `.env.*` 已被 `.gitignore` 忽略,只提交 `.env.*.example` 作为参考模板;
-- `SECRET_KEY` 支持系统环境变量、`.env.<env>` 和 compose environment 覆盖,
-  测试/生产部署必须替换为独立随机值,不要使用模板占位值;
-- `ALLOWED_HOSTS`、`CSRF_TRUSTED_ORIGINS`、`CORS_*` 均支持环境变量覆盖,
-  生产环境建议把 `ALLOWED_HOSTS` 收紧为实际域名/IP,并将 `CORS_ORIGIN_ALLOW_ALL=false`
-  后配置 `CORS_ALLOWED_ORIGINS`;
-- Redis 参数从环境变量读取,由 `base.py` 的 `build_redis_cache_config()` 统一封装。
+## 接口响应规范
 
-## API 架构与规范
-
-本模板内置一套企业级通用 API 基础设施,核心代码位于 `Backend/utils/`。
-
-### 统一响应格式
-
-所有接口(成功与失败)均返回固定结构:
+统一响应格式：
 
 ```json
-{ "code": 200, "message": "success", "data": {}, "requestId": "uuid" }
+{
+  "code": 200,
+  "message": "success",
+  "data": {},
+  "requestId": "uuid"
+}
 ```
 
-- `code`：业务/HTTP 状态码,2xx 表示成功;
-- `message`：提示信息;
-- `data`：业务数据,无数据时为 `{}`;
-- `requestId`：本次请求唯一 ID,同时写入响应头 `X-Request-Id`,
-  优先复用前端注入的 `X-Trace-Id`,用于前后端日志链路关联。
+`requestId` 会同时写入响应头 `X-Request-Id`，并进入日志，便于前后端排查同一次请求。
 
-### 目录结构
+## 上线前检查清单
 
-```
-Backend/
-├── utils/
-│   ├── drf/
-│   │   ├── api.py                StandardAPIView 视图基类 + success/error_response
-│   │   ├── pagination.py         StandardPageNumberPagination(count/page/page_size/results)
-│   │   └── exception_handler.py  全局异常处理(校验错误→可读 message、DB/Redis→507、403→401、兜底 500)
-│   ├── auth/
-│   │   ├── token_service.py      JWT 签发/解析/轮换/失效(基于 token_version)
-│   │   ├── authentication.py     BearerTokenAuthentication(Bearer JWT 认证后端)
-│   │   └── permissions.py        IsActiveUser / IsAdminRole 等通用权限
-│   └── log/
-│       ├── request_id.py         requestId 线程本地存取
-│       └── middleware.py         RequestLogMiddleware(生成/注入 requestId + 请求日志脱敏)
-└── apps/Account/
-    ├── models.py                 自定义 User(AbstractUser + role/status/token_version)
-    ├── serializers/auth.py       Login/Register/RefreshToken/UserInfo 序列化器
-    ├── views/auth.py             登录/注册/当前用户/登出/刷新视图
-    └── urls.py                   auth/ 路由
-```
-
-### 认证方案(JWT Bearer + 刷新令牌)
-
-- **access_token**：短效令牌(默认 30 分钟),请求头 `Authorization: Bearer <token>`;
-- **refresh_token**：长效令牌(默认 7 天),用于续签 access;
-- **token_version**：用户表字段,登出/改密时递增,使该用户历史令牌**全部失效**;
-- JWT 有效期等参数在 `settings/base.py` 的 JWT 段配置,支持环境变量覆盖。
-
-认证接口(与前端 `Frontend/src/api/modules/account.ts` 对齐):
-
-| 接口 | 方法 | 说明 | 认证 |
-| --- | --- | --- | --- |
-| `/auth/registration/` | POST | 注册(username/email/password1/password2) | 公开 |
-| `/auth/login/` | POST | 登录(username/password) | 公开,限流 10/min |
-| `/auth/user/` | GET | 获取当前用户 | 需 access |
-| `/auth/logout/` | POST | 登出(递增 token_version) | 需 access |
-| `/auth/token/refresh/` | POST | 刷新(body: refresh_token) | 公开 |
-
-> 前端经 Vite 代理(`/api` → 后端,rewrite 去掉 `/api`),故前端 `/api/auth/login/`
-> 实际命中后端 `/auth/login/`。
-
-### 编写新业务接口
-
-视图继承 `StandardAPIView`,用 `self.success()` / `self.error()` / `self.paginate()`:
-
-```python
-from rest_framework.permissions import IsAuthenticated
-from Backend.utils.drf.api import StandardAPIView
-
-class ArticleListView(StandardAPIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        qs = Article.objects.all()
-        return self.paginate(request, qs, ArticleSerializer)
-```
-
-### Redis 与缓存
-
-- `dev` / `test` / `prod` 均使用 `django-redis` 接入 Redis,连接信息从环境变量读取,
-  并通过 `REDIS_KEY_PREFIX` 区分缓存 key;未提供环境变量时使用 settings 中的默认值。
-
-### 依赖
-
-新增:`PyJWT`、`redis`、`django-redis`。
-已移除旧的 Token 认证方案(`dj-rest-auth` / `allauth` / `rest_framework.authtoken`),
-改为纯自定义 JWT。
-
-## 注意事项
-
-1. 本地开发数据库迁移的时候，一定要在本地执行完 `python manage.py makemigrations` 和 `python manage.py migrate` 之后，将生成的 migrations 文件进行 `git add`，然后再提交代码。这是因为 Github Actions 自动部署服务器的时候也会执行这两条命令，如果本地没有 migrations 文件而服务器上生成了的话，后续可能会导致代码仓库中的 migrations 文件跟服务器上的 migrations 文件不一致；
-
-2. 本模板使用自定义用户模型 `AUTH_USER_MODEL = "Account.User"`,该设置必须在项目**首次 migrate 之前**确定。模板已在零迁移状态下落地,初始迁移文件 `Account/migrations/0001_initial.py` 已生成,直接使用即可;后续若需调整 User 字段,按常规迁移流程执行。
+- `DEBUG=False`。
+- `SECRET_KEY` 已替换为强随机值。
+- `ALLOWED_HOSTS` 已收紧。
+- `CORS_ORIGIN_ALLOW_ALL=false`。
+- `CORS_ALLOWED_ORIGINS` 是真实前端域名。
+- MySQL/Redis 使用生产实例。
+- 生产数据库密码未提交到 Git。
+- 生产 `.env.prod` 未提交到 Git。
+- Gunicorn worker/thread 符合服务器资源。
+- 日志目录和 media 目录已经挂载。
+- `make lint` 通过。
+- `make format-check` 通过。
+- `make test` 通过。
+- `python manage.py check --settings=Backend.settings.prod` 通过。

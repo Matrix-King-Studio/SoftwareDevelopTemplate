@@ -15,7 +15,7 @@ def load_env_file():
     2. ``Backend/.env.test`` 或 ``Backend/.env.prod`` 中的值;
     3. 本文件里的代码默认值。
 
-    本函数不会覆盖已经存在的系统环境变量,避免部署平台注入的真实配置被模板文件覆盖。
+    本函数不会覆盖已经存在的系统环境变量,避免部署平台注入的真实配置被本地文件覆盖。
     """
     env_name = os.getenv("GUNICORN_ENV_NAME", "prod")
     env_file = Path(__file__).resolve().parent / f".env.{env_name}"

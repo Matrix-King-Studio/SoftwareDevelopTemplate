@@ -40,9 +40,9 @@ def load_env_file():
     优先级:
     1. 系统环境变量 / docker-compose environment 中已经存在的值;
     2. ``.env.<env>`` 文件中的值;
-    3. settings 代码里的默认值,例如 ``env_str("MYSQL_HOST", "dev_mysql_host")``。
+    3. settings 代码里的默认值,例如 ``env_str("MYSQL_HOST", "127.0.0.1")``。
 
-    这里不会覆盖已经存在的系统环境变量,避免部署平台注入的真实配置被本地模板文件覆盖。
+    这里不会覆盖已经存在的系统环境变量,避免部署平台注入的真实配置被本地文件覆盖。
     """
     env_name = os.getenv("DJANGO_SETTINGS_MODULE", "Backend.settings.dev").rsplit(".", 1)[-1]
     env_file = BASE_DIR.parent / f".env.{env_name}"
@@ -133,16 +133,16 @@ def build_redis_cache_config(
     }
 
 
-# Django 签名密钥。系统环境变量或 .env.<env> 中的 SECRET_KEY 优先;默认值只用于模板初始化。
+# Django 签名密钥。系统环境变量或 .env.<env> 中的 SECRET_KEY 优先。
 SECRET_KEY = env_str(
     "SECRET_KEY",
     "django-insecure-$-coch(nitp3%ld7#ffdlqbi5gyy=t9jdq&0fs@w*a=qx1gn!n",
 )
 
-# 允许访问的主机。默认放开便于模板初始化;生产环境应通过 ALLOWED_HOSTS 收紧为域名/IP 白名单。
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", ["*"])
+# 允许访问的主机。生产环境应通过 ALLOWED_HOSTS 收紧为域名/IP 白名单。
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", ["localhost", "127.0.0.1"])
 
-# 允许通过 HTTPS 访问后端时提交 CSRF 请求的来源。当前模板关闭了 CsrfViewMiddleware,
+# 允许通过 HTTPS 访问后端时提交 CSRF 请求的来源。当前项目关闭了 CsrfViewMiddleware,
 # 但保留该项便于后续启用 CSRF 防护。
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS", ["https://localhost:8000"])
 
@@ -173,7 +173,7 @@ AUTH_USER_MODEL = "Account.User"
 # 中间件链路。顺序会影响请求处理:
 # - corsheaders 尽量靠前处理跨域头
 # - AuthenticationMiddleware 之后才能在 RequestLogMiddleware 中读取 request.user
-# - 当前模板关闭 CsrfViewMiddleware,API 主要依赖 Bearer JWT 鉴权
+# - 当前项目关闭 CsrfViewMiddleware,API 主要依赖 Bearer JWT 鉴权
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -189,7 +189,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "Backend.urls"
 
-# 模板系统配置。后台管理和部分 Django 组件依赖 DjangoTemplates。
+# Django 模板引擎配置。后台管理和部分 Django 组件依赖 DjangoTemplates。
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -276,7 +276,7 @@ JWT_REFRESH_TOKEN_TTL_DAYS = env_int("JWT_REFRESH_TOKEN_TTL_DAYS", 7)
 CORS_ALLOW_CREDENTIALS = env_bool("CORS_ALLOW_CREDENTIALS", True)
 # CORS_ORIGIN_ALLOW_ALL=True 会放开所有来源;生产环境建议设置为 false 并配置白名单。
 CORS_ORIGIN_ALLOW_ALL = env_bool("CORS_ORIGIN_ALLOW_ALL", True)
-# CORS_ALLOWED_ORIGINS 用于生产白名单,例如 https://admin.example.com,https://app.example.com。
+# CORS_ALLOWED_ORIGINS 用于生产白名单,多个来源用英文逗号分隔。
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", [])
 CORS_ALLOW_METHODS = ("GET", "OPTIONS", "PATCH", "DELETE", "POST", "PUT", "VIEW")
 CORS_ALLOW_HEADERS = (

@@ -81,7 +81,6 @@ class TokenRefreshManager {
   /** 清除 Token 并跳转登录页 */
   redirectToLogin(message = '登录已过期，请重新登录'): void {
     clearAllTokens()
-    // ⚠️ 登录路由路径请按项目实际调整（当前模板登录页为 /signup_login）
     router.replace({ path: '/signup_login', query: { message } })
   }
 }

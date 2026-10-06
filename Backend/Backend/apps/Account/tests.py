@@ -1,12 +1,12 @@
 """
-账户认证接口单元测试(示例 + 冒烟测试)。
+账户认证接口单元测试(回归 + 冒烟测试)。
 
 运行方式::
 
     python manage.py test --settings=Backend.settings.unittest
 
 本测试使用内存 SQLite(见 settings/unittest.py),不连接任何 MySQL / Redis,
-既验证认证五链路可用,也作为编写后续业务测试的范式参考。
+验证认证五链路可用,并固定统一响应结构。
 
 要点:
 - 继承 DRF ``APITestCase``,用 ``self.client`` 发起请求;
@@ -45,7 +45,7 @@ class AuthApiTests(APITestCase):
             self.register_url,
             {
                 "username": username,
-                "email": f"{username}@example.com",
+                "email": f"{username}@test.local",
                 "password1": password,
                 "password2": password,
             },
@@ -69,7 +69,7 @@ class AuthApiTests(APITestCase):
             self.register_url,
             {
                 "username": "bob",
-                "email": "bob@example.com",
+                "email": "bob@test.local",
                 "password1": "secret123",
                 "password2": "different",
             },

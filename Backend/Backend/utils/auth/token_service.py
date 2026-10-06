@@ -1,7 +1,7 @@
 """
 JWT 令牌服务。
 
-本模板采用纯 JWT 双令牌方案:
+本项目采用纯 JWT 双令牌方案:
 
 - ``access_token``：短效令牌,用于接口鉴权
 - ``refresh_token``：长效令牌,用于续签新的 access_token

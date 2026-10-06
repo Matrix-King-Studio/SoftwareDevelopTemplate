@@ -17,7 +17,7 @@ const STORAGE_KEY_USER = 'auth_user'
 export const useAccountStore = defineStore('account', () => {
   /** 当前登录用户信息 */
   const userInfo = ref<UserInfo | null>(null)
-  /** 访问令牌（来源于 localStorage，便于模板内引用） */
+  /** 访问令牌（来源于 localStorage，便于组件内引用） */
   const token = ref<string | null>(null)
   /** 请求进行中标志 */
   const isLoading = ref<boolean>(false)

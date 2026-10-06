@@ -112,21 +112,7 @@ class StandardAPIView(APIView):
     - ``self.get_object_or_error()``：按主键取对象,不存在返回 404 错误响应
     - ``self.update_instance()``：将校验数据批量赋值到模型实例(部分更新)
 
-    示例::
-
-        class ProfileView(StandardAPIView):
-            permission_classes = [IsAuthenticated]
-
-            def get(self, request):
-                data = UserInfoSerializer(request.user).data
-                return self.success(data=data, message="查询成功")
-
-            def patch(self, request):
-                serializer = UpdateProfileSerializer(data=request.data)
-                serializer.is_valid(raise_exception=True)
-                self.update_instance(request.user, serializer.validated_data, ["avatar"])
-                request.user.save()
-                return self.success(message="更新成功")
+    业务视图应通过这些便捷方法返回统一结构,避免各接口自行拼接响应体。
     """
 
     pagination_class = StandardPageNumberPagination
@@ -147,11 +133,7 @@ class StandardAPIView(APIView):
         tuple[Model | None, Response | None]
             ``(实例, None)`` 表示找到;``(None, error_response)`` 表示未找到。
 
-        示例::
-
-            obj, err = self.get_object_or_error(Article, pk, label="文章")
-            if err:
-                return err
+        调用方应先判断第二个返回值;不为 ``None`` 时直接返回该错误响应。
         """
         qs = model_or_qs.objects if hasattr(model_or_qs, "objects") else model_or_qs
         obj = qs.filter(id=pk).first()

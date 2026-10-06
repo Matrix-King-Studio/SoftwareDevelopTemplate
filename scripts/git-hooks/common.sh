@@ -3,10 +3,10 @@
 # Git Hook 公共工具函数库。
 #
 # 被 .husky/ 下的各 hook 通过 `. "$ROOT_DIR/scripts/git-hooks/common.sh"` 加载。
-# 仅提供本模板用得到的最小集合:统一输出、命令探测、Python 解释器探测。
+# 仅提供当前仓库用得到的最小集合:统一输出、命令探测、Python 解释器探测。
 #
 # 设计取舍(相对参考项目精简):
-# - 本模板只有 Backend + Frontend 两个模块,无 Admin、无 elegant-router 自动生成文件;
+# - 当前仓库只有 Backend + Frontend 两个模块,无 Admin、无 elegant-router 自动生成文件;
 # - 不引入「分支 -> Django settings 映射」「.git-hooks.config 加载」等重型配置,
 #   pre-push 的测试固定使用 Backend.settings.unittest(内存库,不碰任何 MySQL/Redis)。
 #

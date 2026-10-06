@@ -11,13 +11,13 @@ REQUEST_LOG_LEVEL = env_str("REQUEST_LOG_LEVEL", DJANGO_LOG_LEVEL)
 REQUEST_LOG_SUCCESS_MIN_DURATION_MS = env_int("REQUEST_LOG_SUCCESS_MIN_DURATION_MS", 0)
 configure_logging(DJANGO_LOG_LEVEL, REQUEST_LOG_LEVEL)
 
-# ── MySQL: 环境变量优先,缺省时使用测试占位值 ──
-# 实际部署时应在 docker-compose-test.yml 的 environment 中替换 test_mysql_*。
-MYSQL_HOST = env_str("MYSQL_HOST", "test_mysql_host")
+# ── MySQL: 环境变量优先,缺省时使用测试默认值 ──
+# 测试部署可通过 docker-compose-test.yml 的 environment 覆盖这些值。
+MYSQL_HOST = env_str("MYSQL_HOST", "{{TEST_MYSQL_HOST}}")
 MYSQL_PORT = env_str("MYSQL_PORT", "3306")
-MYSQL_NAME = env_str("MYSQL_NAME", "test_mysql_name")
-MYSQL_USER = env_str("MYSQL_USER", "test_mysql_user")
-MYSQL_PASSWORD = env_str("MYSQL_PASSWORD", "test_mysql_password")
+MYSQL_NAME = env_str("MYSQL_NAME", "{{TEST_MYSQL_NAME}}")
+MYSQL_USER = env_str("MYSQL_USER", "{{TEST_MYSQL_USER}}")
+MYSQL_PASSWORD = env_str("MYSQL_PASSWORD", "{{TEST_MYSQL_PASSWORD}}")
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
@@ -31,10 +31,10 @@ DATABASES = {
 
 # ── Redis: 统一由 base.build_redis_cache_config 封装 ──
 # 测试环境默认使用 REDIS_DB=1,避免和生产默认 DB=0 冲突。
-REDIS_HOST = env_str("REDIS_HOST", "test_redis_host")
+REDIS_HOST = env_str("REDIS_HOST", "{{TEST_REDIS_HOST}}")
 REDIS_PORT = env_int("REDIS_PORT", 6379)
 REDIS_DB = env_int("REDIS_DB", 1)
-REDIS_PASSWORD = env_str("REDIS_PASSWORD", "test_redis_password")
+REDIS_PASSWORD = env_str("REDIS_PASSWORD", "{{TEST_REDIS_PASSWORD}}")
 REDIS_KEY_PREFIX = env_str("REDIS_KEY_PREFIX", "test")
 CACHES = build_redis_cache_config(
     host=REDIS_HOST,

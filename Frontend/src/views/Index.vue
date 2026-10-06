@@ -4,7 +4,7 @@
       <div class="container hero-content">
         <p class="hero-eyebrow">Frontend</p>
         <h1 class="hero-title">把产品想法更快交付到用户手里</h1>
-        <p class="hero-subtitle">统一工程模板、账号体系和页面规范，减少重复搭建时间。</p>
+        <p class="hero-subtitle">统一账号体系、接口契约和页面规范，减少重复搭建时间。</p>
         <div class="hero-actions">
           <router-link to="/signup_login" class="btn btn-primary">立即开始</router-link>
           <a href="#features" class="btn btn-secondary">查看能力</a>
@@ -63,7 +63,7 @@
     <section class="cta-section">
       <div class="container cta-content">
         <h2>准备好开始你的下一个前端项目了吗？</h2>
-        <p>注册一个账户，直接在现有模板上继续开发。</p>
+        <p>注册一个账户，直接进入业务开发流程。</p>
         <router-link to="/signup_login" class="btn btn-primary btn-large">注册免费账户</router-link>
       </div>
     </section>

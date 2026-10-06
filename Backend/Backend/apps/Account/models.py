@@ -1,7 +1,7 @@
 """
 账户模型。
 
-本模板采用自定义 ``User`` 模型(继承 Django ``AbstractUser``),
+本项目采用自定义 ``User`` 模型(继承 Django ``AbstractUser``),
 在 Django 自带的 username / email / password / 权限体系之上,
 扩展企业项目常用的三个字段:
 
@@ -11,13 +11,13 @@
   access / refresh token 全部失效(用于"登出""改密""强制下线")
 
 为什么继承 AbstractUser:
-    模板的登录/注册走 username + password,且需要 Django Admin、SimpleUI,
+    项目的登录/注册走 username + password,且需要 Django Admin、SimpleUI,
     AbstractUser 与这些设施天然兼容,改动最小。settings 中通过
     ``AUTH_USER_MODEL = "Account.User"`` 指定本模型为项目用户模型。
 
 注意:
     必须在项目"首次 migrate 之前"就指定 AUTH_USER_MODEL,
-    本模板正是零迁移状态下落地,故安全。后续若要改动 User 字段,
+    本项目正是零迁移状态下落地,故安全。后续若要改动 User 字段,
     按常规 makemigrations / migrate 流程即可。
 """
 

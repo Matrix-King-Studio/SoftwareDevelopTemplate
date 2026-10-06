@@ -1,8 +1,5 @@
 # {{ProjectChineseName}} 生产环境 Docker Compose 配置
-#
-# 占位符说明：
-#   {{DOCKER_NAMESPACE}} - 镜像命名空间
-#
+
 name: {{DOCKER_NAMESPACE}}
 services:
   django:
@@ -12,32 +9,32 @@ services:
     networks:
       - {{DOCKER_NAMESPACE}}-net
     ports:
-      - "{{prod_django_port}}:8000"
+      - "{{PROD_DJANGO_PORT}}:8000"
     volumes:
       - ./log:/app/Backend/logs
       - ./media:/app/Backend/media
     environment:
-      # MySQL 连接配置。部署生产环境时替换 prod_mysql_* 占位值。
-      - MYSQL_HOST=${MYSQL_HOST:-prod_mysql_host}
+      # MySQL 连接配置。
+      - MYSQL_HOST=${MYSQL_HOST:-{{PROD_MYSQL_HOST}}}
       - MYSQL_PORT=${MYSQL_PORT:-3306}
-      - MYSQL_NAME=${MYSQL_NAME:-prod_mysql_name}
-      - MYSQL_USER=${MYSQL_USER:-prod_mysql_user}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-prod_mysql_password}
+      - MYSQL_NAME=${MYSQL_NAME:-{{PROD_MYSQL_NAME}}}
+      - MYSQL_USER=${MYSQL_USER:-{{PROD_MYSQL_USER}}}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-{{PROD_MYSQL_PASSWORD}}}
       # Redis 缓存配置。生产环境默认使用 REDIS_DB=0。
-      - REDIS_HOST=${REDIS_HOST:-prod_redis_host}
+      - REDIS_HOST=${REDIS_HOST:-{{PROD_REDIS_HOST}}}
       - REDIS_PORT=${REDIS_PORT:-6379}
       - REDIS_DB=${REDIS_DB:-0}
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-prod_redis_password}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-{{PROD_REDIS_PASSWORD}}}
       - REDIS_KEY_PREFIX=${REDIS_KEY_PREFIX:-prod}
       - REDIS_CACHE_TIMEOUT=${REDIS_CACHE_TIMEOUT:-300}
       - REDIS_SOCKET_CONNECT_TIMEOUT=${REDIS_SOCKET_CONNECT_TIMEOUT:-5}
       - REDIS_SOCKET_TIMEOUT=${REDIS_SOCKET_TIMEOUT:-5}
-      # Django 应用密钥、日志与 JWT 有效期配置。生产环境必须替换 SECRET_KEY。
-      - SECRET_KEY=${SECRET_KEY:-prod_django_secret_key}
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-*}
-      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-https://localhost:8000}
+      # Django 应用密钥、日志与 JWT 有效期配置。
+      - SECRET_KEY=${SECRET_KEY:-{{PROD_SECRET_KEY}}}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-{{PROD_ALLOWED_HOSTS}}}
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-https://{{PROD_CSRF_TRUSTED_HOSTS}}}
       - CORS_ALLOW_CREDENTIALS=${CORS_ALLOW_CREDENTIALS:-true}
-      - CORS_ORIGIN_ALLOW_ALL=${CORS_ORIGIN_ALLOW_ALL:-true}
+      - CORS_ORIGIN_ALLOW_ALL=${CORS_ORIGIN_ALLOW_ALL:-false}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-}
       - DJANGO_LOG_LEVEL=${DJANGO_LOG_LEVEL:-INFO}
       - REQUEST_LOG_SUCCESS_MIN_DURATION_MS=${REQUEST_LOG_SUCCESS_MIN_DURATION_MS:-1000}
